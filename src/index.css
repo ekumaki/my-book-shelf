@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-gray-900 h-screen overflow-hidden select-none flex justify-center items-center;
+  }
+}
+
+/* --- Themes --- */
+
+/* Common */
+.shelf-view-container {
+  transition: background-color 0.3s ease;
+}
+
+.shelf-board {
+  position: relative;
+  transition: background 0.3s ease;
+}
+
+.shelf-board::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 1. Dark Wood (Default) */
+.theme-dark-wood {
+  background-color: #5D4037;
+  background-image:
+    url("https://www.transparenttextures.com/patterns/wood-pattern.png"),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+  background-blend-mode: multiply;
+}
+
+.theme-dark-wood .shelf-board {
+  background: linear-gradient(to bottom, #4E342E 0%, #3E2723 100%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 2. Light Wood */
+.theme-light-wood {
+  background-color: #D7CCC8;
+  background-image:
+    url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+  /* Brightness adjustment */
+}
+
+.theme-light-wood .shelf-board {
+  background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 100%);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.theme-light-wood .shelf-board::after {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Book Spine Effects */
+.book-spine {
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.book-spine:hover {
+  transform: translateY(-5px) scale(1.02);
+  z-index: 10;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(136, 136, 136, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(85, 85, 85, 0.8);
+}

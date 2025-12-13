@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookKnowledge</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Dexie.js (IndexedDB Wrapper) -->
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+
+    <!-- Icons (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* --- テーマ別スタイル定義 (拡張性を考慮した構成) --- */
+        
+        /* 共通設定 */
+        .shelf-view-container {
+            transition: background-color 0.3s ease;
+        }
+        .shelf-board {
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        .shelf-board::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        /* 1. Dark Wood (Default) */
+        .theme-dark-wood {
+            background-color: #5D4037;
+            background-image: 
+                url("https://www.transparenttextures.com/patterns/wood-pattern.png"),
+                linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+            background-blend-mode: multiply;
+        }
+        .theme-dark-wood .shelf-board {
+            background: linear-gradient(to bottom, #4E342E 0%, #3E2723 100%);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        /* 2. Light Wood (New) */
+        .theme-light-wood {
+            background-color: #D7CCC8;
+            background-image: 
+                url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+            /* 明るさを保つためにblend-mode調整 */
+        }
+        .theme-light-wood .shelf-board {
+            background: linear-gradient(to bottom, #A1887F 0%, #8D6E63 100%);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        /* 明るい背景用の影調整 */
+        .theme-light-wood .shelf-board::after {
+            background: rgba(0,0,0,0.1);
+        }
+
+
+        /* その他のUIパーツ */
+        .book-spine {
+            box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .book-spine:hover {
+            transform: translateY(-5px) scale(1.02);
+            z-index: 10;
+        }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-800 font-sans h-screen overflow-hidden select-none flex justify-center items-center">
+    <div id="root" class="h-full w-full max-w-md bg-white shadow-2xl relative"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- Database Setup (Dexie.js) ---
+        const db = new Dexie('BookKnowledgeDB');
+        // finishedDate はスキーマ定義になくても保存可能だが、明示的に扱う
+        db.version(1).stores({
+            books: 'id, title, authors, status, registeredAt, isbn',
+            memos: 'id, bookId, tags, createdAt'
+        });
+
+        // --- Utility Functions ---
+        const generateId = () => crypto.randomUUID();
+        
+        // --- Configuration & Constants ---
+        
+        // ステータス定義
+        const STATUS_CONFIG = {
+            unread: { label: '未読', color: 'bg-gray-200 text-gray-600', next: 'reading' },
+            reading: { label: '読書中', color: 'bg-blue-100 text-blue-700', next: 'read' },
+            read: { label: '読了', color: 'bg-green-100 text-green-700', next: 'unread' }
+        };
+
+        // テーマ定義
+        const THEMES = {
+            'dark_wood': {
+                id: 'dark_wood',
+                label: 'ダークウッド (標準)',
+                cssClass: 'theme-dark-wood',
+                textColor: 'text-white',       
+                subTextColor: 'text-white/70', 
+                borderColor: 'border-white/20',
+                bgColor: 'bg-black/20'         
+            },
+            'light_wood': {
+                id: 'light_wood',
+                label: 'ライトウッド (明るい)',
+                cssClass: 'theme-light-wood',
+                textColor: 'text-gray-800',
+                subTextColor: 'text-gray-600',
+                borderColor: 'border-gray-800/20',
+                bgColor: 'bg-white/40'
+            }
+        };
+
+        // --- Components ---
+
+        // 1. Navigation Bar
+        const NavBar = ({ activeTab, setActiveTab }) => {
+            const tabs = [
+                { id: 'shelf', label: '本棚', icon: 'ph-books' },
+                { id: 'search', label: '探す', icon: 'ph-magnifying-glass' },
+                { id: 'knowledge', label: 'ナレッジ', icon: 'ph-lightbulb' },
+                { id: 'settings', label: '設定', icon: 'ph-gear' },
+            ];
+
+            return (
+                <div className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 flex justify-around items-center pb-safe pt-2 h-16 z-50">
+                    {tabs.map(tab => (
+                        <button 
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex flex-col items-center justify-center w-full h-full ${activeTab === tab.id ? 'text-amber-700' : 'text-gray-400'}`}
+                        >
+                            <i className={`ph ${tab.icon} text-2xl mb-1`}></i>
+                            <span className="text-xs font-medium">{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
+            );
+        };
+
+        // 2. Book Component (Shelf Item)
+        const BookItem = ({ book, onClick }) => {
+            const statusInfo = STATUS_CONFIG[book.status] || STATUS_CONFIG.unread;
+            
+            return (
+                <div onClick={() => onClick(book)} className="cursor-pointer flex flex-col items-center w-24 sm:w-28 mx-2 mb-0 relative group book-spine">
+                    <div className="w-full aspect-[2/3] bg-gray-200 rounded-sm overflow-hidden shadow-lg relative">
+                        {book.thumbnail ? (
+                            <img src={book.thumbnail} alt={book.title} className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-amber-100 text-amber-800 p-2 text-center text-xs font-bold">
+                                {book.title}
+                            </div>
+                        )}
+                        
+                        {/* Status Badge on Cover */}
+                        {book.status === 'read' && (
+                            <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] px-1 py-0.5 rounded-bl shadow">読了</div>
+                        )}
+                        {book.status === 'reading' && (
+                            <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] px-1 py-0.5 rounded-bl shadow">読中</div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // 3. Shelf View (Home)
+        const ShelfView = ({ onBookClick, currentThemeId }) => {
+            const [books, setBooks] = useState([]);
+            const [filter, setFilter] = useState('all');
+            const [monthFilter, setMonthFilter] = useState('all'); // YYYY-MM or 'all'
+            const [sort, setSort] = useState('registeredAt');
+            const [availableMonths, setAvailableMonths] = useState([]);
+
+            const theme = THEMES[currentThemeId] || THEMES['dark_wood'];
+
+            useEffect(() => {
+                const loadBooks = async () => {
+                    let collection = db.books.toCollection();
+                    const allBooks = await collection.toArray();
+                    
+                    // 月リストの作成（読了日がある本から抽出）
+                    const months = new Set();
+                    allBooks.forEach(b => {
+                        if (b.finishedDate) {
+                            months.add(b.finishedDate.substring(0, 7)); // YYYY-MM
+                        }
+                    });
+                    setAvailableMonths(Array.from(months).sort().reverse());
+
+                    let sorted = allBooks.sort((a, b) => {
+                        if (sort === 'registeredAt') return b.registeredAt - a.registeredAt;
+                        if (sort === 'title') return a.title.localeCompare(b.title);
+                        if (sort === 'authors') return (a.authors[0] || '').localeCompare(b.authors[0] || '');
+                        if (sort === 'finishedDate') return (b.finishedDate || '').localeCompare(a.finishedDate || '');
+                        return 0;
+                    });
+
+                    // ステータスフィルタ
+                    if (filter !== 'all') {
+                        sorted = sorted.filter(b => b.status === filter);
+                    }
+
+                    // 月フィルタ
+                    if (monthFilter !== 'all') {
+                        sorted = sorted.filter(b => b.finishedDate && b.finishedDate.startsWith(monthFilter));
+                    }
+
+                    setBooks(sorted);
+                };
+                loadBooks();
+            }, [filter, sort, monthFilter]);
+
+             useEffect(() => {
+                const interval = setInterval(async () => {
+                     // 簡易的な更新検知（本来はuseLiveQuery推奨）
+                     // ここではシンプルに再ロードをトリガーするだけ
+                     // 実際の実装ではパフォーマンス考慮が必要
+                }, 1000);
+                return () => clearInterval(interval);
+            }, []);
+
+
+            return (
+                <div className={`h-full flex flex-col shelf-view-container ${theme.cssClass} ${theme.textColor} overflow-hidden`}>
+                    <div className={`p-4 ${theme.bgColor} backdrop-blur-sm flex flex-col gap-2 shadow-md z-10 transition-colors`}>
+                        <div className="flex justify-between items-center">
+                            <h1 className="text-xl font-bold font-serif tracking-wider flex items-center gap-2">
+                                <i className="ph-fill ph-books"></i> My Library
+                            </h1>
+                            <div className="flex gap-2">
+                                <select 
+                                    className={`${theme.bgColor} ${theme.textColor} text-xs rounded border ${theme.borderColor} p-1 focus:outline-none`}
+                                    value={filter} onChange={e => setFilter(e.target.value)}
+                                >
+                                    <option className="text-gray-900" value="all">すべて</option>
+                                    <option className="text-gray-900" value="reading">読書中</option>
+                                    <option className="text-gray-900" value="read">読了</option>
+                                    <option className="text-gray-900" value="unread">未読</option>
+                                </select>
+                                <select 
+                                    className={`${theme.bgColor} ${theme.textColor} text-xs rounded border ${theme.borderColor} p-1 focus:outline-none`}
+                                    value={sort} onChange={e => setSort(e.target.value)}
+                                >
+                                    <option className="text-gray-900" value="registeredAt">登録順</option>
+                                    <option className="text-gray-900" value="title">タイトル順</option>
+                                    <option className="text-gray-900" value="authors">著者順</option>
+                                    <option className="text-gray-900" value="finishedDate">読了日順</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        {/* 月絞り込みフィルタ（読了月がある場合のみ表示） */}
+                        {availableMonths.length > 0 && (
+                            <div className="flex items-center gap-2 justify-end">
+                                <span className={`text-[10px] ${theme.subTextColor}`}>読了月:</span>
+                                <select 
+                                    className={`${theme.bgColor} ${theme.textColor} text-xs rounded border ${theme.borderColor} p-1 focus:outline-none min-w-[100px]`}
+                                    value={monthFilter} onChange={e => setMonthFilter(e.target.value)}
+                                >
+                                    <option className="text-gray-900" value="all">全期間</option>
+                                    {availableMonths.map(month => (
+                                        <option key={month} className="text-gray-900" value={month}>
+                                            {month.replace('-', '年')}月
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto pb-20 pt-4">
+                        <div className="flex flex-wrap items-end px-2 gap-y-0">
+                            {books.length === 0 ? (
+                                <div className={`w-full h-64 flex flex-col items-center justify-center ${theme.subTextColor}`}>
+                                    <i className="ph ph-books text-4xl mb-2"></i>
+                                    <p>本がありません</p>
+                                    <p className="text-sm">条件に一致する本が見つかりません</p>
+                                </div>
+                            ) : (
+                                books.map((book) => (
+                                    <React.Fragment key={book.id}>
+                                        <BookItem book={book} onClick={onBookClick} />
+                                    </React.Fragment>
+                                ))
+                            )}
+                        </div>
+                         <div className="w-full h-4 shelf-board mt-0"></div>
+                         <div className="w-full h-32 mt-8 relative">
+                            <div className="absolute bottom-0 w-full h-4 shelf-board"></div>
+                         </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Search View
+        const SearchView = ({ onAddBook }) => {
+            const [query, setQuery] = useState('');
+            const [results, setResults] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [existingIsbns, setExistingIsbns] = useState(new Set());
+
+            useEffect(() => {
+                db.books.toArray().then(books => {
+                    setExistingIsbns(new Set(books.map(b => b.isbn).filter(Boolean)));
+                });
+            }, []);
+
+            const searchBooks = async (e) => {
+                e.preventDefault();
+                if (!query) return;
+                setLoading(true);
+                try {
+                    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=20`);
+                    const data = await res.json();
+                    if (data.items) {
+                        setResults(data.items);
+                    } else {
+                        setResults([]);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('検索に失敗しました');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleAdd = async (item) => {
+                const info = item.volumeInfo;
+                const isbn = info.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || info.industryIdentifiers?.[0]?.identifier;
+                
+                const newBook = {
+                    id: generateId(),
+                    title: info.title,
+                    authors: info.authors || ['不明'],
+                    thumbnail: info.imageLinks?.thumbnail?.replace('http:', 'https:'), // Force HTTPS
+                    isbn: isbn,
+                    status: 'unread',
+                    registeredAt: Date.now(),
+                    finishedDate: null // 初期値
+                };
+
+                await db.books.add(newBook);
+                setExistingIsbns(prev => new Set(prev).add(isbn));
+                onAddBook();
+            };
+
+            return (
+                <div className="h-full flex flex-col bg-gray-50 pb-20">
+                    <div className="bg-white p-4 shadow-sm z-10 sticky top-0">
+                        <form onSubmit={searchBooks} className="flex gap-2">
+                            <input 
+                                type="text" 
+                                value={query}
+                                onChange={e => setQuery(e.target.value)}
+                                placeholder="タイトル、著者、ISBN..."
+                                className="flex-1 bg-gray-100 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            />
+                            <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm">
+                                {loading ? <i className="ph ph-spinner animate-spin"></i> : '検索'}
+                            </button>
+                        </form>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {results.map(item => {
+                                const info = item.volumeInfo;
+                                const isbn = info.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier || info.industryIdentifiers?.[0]?.identifier;
+                                const isRegistered = existingIsbns.has(isbn);
+
+                                return (
+                                    <div key={item.id} className="bg-white p-3 rounded-lg shadow flex gap-3">
+                                        <div className="w-16 h-24 flex-shrink-0 bg-gray-200">
+                                            {info.imageLinks?.thumbnail && (
+                                                <img src={info.imageLinks.thumbnail.replace('http:', 'https:')} alt="" className="w-full h-full object-cover" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 flex flex-col">
+                                            <h3 className="font-bold text-sm line-clamp-2">{info.title}</h3>
+                                            <p className="text-xs text-gray-500 mb-2">{info.authors?.join(', ')}</p>
+                                            <div className="mt-auto">
+                                                {isRegistered ? (
+                                                    <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
+                                                        <i className="ph-fill ph-check-circle"></i> 登録済み
+                                                    </span>
+                                                ) : (
+                                                    <button 
+                                                        onClick={() => handleAdd(item)}
+                                                        className="bg-amber-100 text-amber-800 px-3 py-1 rounded text-xs font-bold hover:bg-amber-200 w-full"
+                                                    >
+                                                        本棚に追加
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Modal for Image View
+        const ImageModal = ({ src, onClose }) => {
+            const handleDownload = async () => {
+                try {
+                    const response = await fetch(src);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `book_cover_${Date.now()}.jpg`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    console.error("Direct download failed, opening in new tab", e);
+                    window.open(src, '_blank');
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+                    <button onClick={onClose} className="absolute top-4 right-4 text-white p-2">
+                        <i className="ph ph-x text-2xl"></i>
+                    </button>
+                    <img src={src} className="max-w-full max-h-[80vh] object-contain shadow-2xl mb-4" onClick={(e) => e.stopPropagation()} />
+                    
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); handleDownload(); }}
+                        className="bg-white text-gray-900 px-6 py-2 rounded-full font-bold flex items-center gap-2 hover:bg-gray-200"
+                    >
+                        <i className="ph ph-download-simple"></i> ダウンロード
+                    </button>
+                    <p className="text-white/50 text-xs mt-2">※ダウンロードできない場合は別タブで開きます</p>
+                </div>
+            );
+        };
+
+        // 5. Book Details & Memos
+        const BookDetails = ({ book, onBack }) => {
+            const [memos, setMemos] = useState([]);
+            const [showModal, setShowModal] = useState(false);
+            const [showImageModal, setShowImageModal] = useState(false);
+            const [localBook, setLocalBook] = useState(book);
+
+            const loadMemos = async () => {
+                const ms = await db.memos.where('bookId').equals(book.id).reverse().sortBy('createdAt');
+                setMemos(ms);
+            };
+
+            useEffect(() => {
+                loadMemos();
+            }, [book]);
+
+            const cycleStatus = async () => {
+                const currentStatus = localBook.status || 'unread';
+                const nextStatus = STATUS_CONFIG[currentStatus].next;
+                
+                // 読了になったら今日の日付をデフォルトで入れる（未設定の場合）
+                let finishedDateUpdate = localBook.finishedDate;
+                if (nextStatus === 'read' && !finishedDateUpdate) {
+                    finishedDateUpdate = new Date().toISOString().slice(0, 10);
+                }
+                
+                await db.books.update(book.id, { 
+                    status: nextStatus,
+                    finishedDate: finishedDateUpdate
+                });
+                
+                setLocalBook({ 
+                    ...localBook, 
+                    status: nextStatus,
+                    finishedDate: finishedDateUpdate
+                });
+            };
+
+            const handleDateChange = async (e) => {
+                const newDate = e.target.value;
+                await db.books.update(book.id, { finishedDate: newDate });
+                setLocalBook({ ...localBook, finishedDate: newDate });
+            };
+
+            const handleDelete = async () => {
+                if(confirm('この本とすべてのメモを削除しますか？')) {
+                    await db.books.delete(book.id);
+                    await db.memos.where('bookId').equals(book.id).delete();
+                    onBack();
+                }
+            };
+
+            const currentStatusConfig = STATUS_CONFIG[localBook.status] || STATUS_CONFIG.unread;
+
+            return (
+                <div className="h-full flex flex-col bg-gray-50 pb-0 overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-white border-b p-3 flex items-center gap-3 shadow-sm z-10">
+                        <button onClick={onBack} className="text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                            <i className="ph ph-arrow-left text-xl"></i>
+                        </button>
+                        <h2 className="font-bold truncate flex-1">{localBook.title}</h2>
+                        <button onClick={handleDelete} className="text-red-400 p-1">
+                            <i className="ph ph-trash text-lg"></i>
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto pb-24">
+                        {/* Book Info Header */}
+                        <div className="bg-white p-4 mb-4 shadow-sm flex gap-4">
+                            <div className="w-24 flex-shrink-0 shadow-md cursor-zoom-in" onClick={() => setShowImageModal(true)}>
+                                {localBook.thumbnail ? (
+                                    <img src={localBook.thumbnail} className="w-full h-auto" />
+                                ) : (
+                                    <div className="w-full h-32 bg-gray-200 flex items-center justify-center text-xs">No Image</div>
+                                )}
+                            </div>
+                            <div className="flex-1 py-1">
+                                <p className="text-sm text-gray-500 mb-2">{localBook.authors.join(', ')}</p>
+                                
+                                <div className="flex flex-col items-start gap-3 mt-2">
+                                    <button 
+                                        onClick={cycleStatus}
+                                        className={`text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 border transition-colors ${currentStatusConfig.color} border-current`}
+                                    >
+                                        <i className="ph-fill ph-check-circle"></i>
+                                        {currentStatusConfig.label}
+                                        <span className="text-[10px] opacity-60 ml-1">(タップで変更)</span>
+                                    </button>
+
+                                    {/* 読了日設定 (読了ステータスまたは既に日付がある場合表示) */}
+                                    {(localBook.status === 'read' || localBook.finishedDate) && (
+                                        <div className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 w-full">
+                                            <i className="ph ph-calendar-check text-gray-400 text-sm"></i>
+                                            <div className="flex-1">
+                                                <label className="text-[10px] font-bold text-gray-500 block">読了日</label>
+                                                <input 
+                                                    type="date" 
+                                                    value={localBook.finishedDate || ''}
+                                                    onChange={handleDateChange}
+                                                    className="bg-transparent text-sm text-gray-700 w-full focus:outline-none font-medium"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Memos List */}
+                        <div className="px-4">
+                            <div className="flex justify-between items-end mb-2">
+                                <h3 className="font-bold text-gray-700">ナレッジ・感想メモ ({memos.length})</h3>
+                            </div>
+                            
+                            {memos.length === 0 ? (
+                                <div className="text-center py-8 text-gray-400 bg-white rounded-lg border border-dashed border-gray-300">
+                                    <p className="text-sm">まだメモがありません</p>
+                                    <p className="text-xs mt-1">右下のボタンから追加できます</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {memos.map(memo => (
+                                        <div key={memo.id} className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-amber-500">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {memo.tags.map(t => (
+                                                        <span key={t} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                                                            {t}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                {memo.page && <span className="text-xs text-gray-400">P.{memo.page}</span>}
+                                            </div>
+                                            
+                                            {memo.quote && (
+                                                <div className="bg-gray-50 p-3 rounded text-sm text-gray-600 italic mb-3 relative">
+                                                    <i className="ph-fill ph-quotes text-gray-300 absolute top-1 left-1"></i>
+                                                    <span className="relative z-10">{memo.quote}</span>
+                                                </div>
+                                            )}
+                                            
+                                            {memo.comment && (
+                                                <p className="text-sm text-gray-800 whitespace-pre-wrap">{memo.comment}</p>
+                                            )}
+                                            <div className="mt-2 text-[10px] text-gray-400 text-right">
+                                                {new Date(memo.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* FAB */}
+                    <button 
+                        onClick={() => setShowModal(true)}
+                        className="fixed bottom-20 right-[calc(50%-224px+16px)] sm:right-auto sm:translate-x-0 translate-x-[calc(50vw-224px)] bg-amber-600 hover:bg-amber-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40 md:right-[calc(50%-200px)]"
+                        style={{ right: 'max(1rem, calc(50% - 208px))' }} // 簡易的な中央寄せ対策
+                    >
+                        <i className="ph ph-plus text-2xl"></i>
+                    </button>
+
+                    {showModal && (
+                        <MemoModal 
+                            bookId={book.id} 
+                            onClose={() => setShowModal(false)} 
+                            onSaved={() => {
+                                setShowModal(false);
+                                loadMemos();
+                            }} 
+                        />
+                    )}
+                    
+                    {showImageModal && localBook.thumbnail && (
+                        <ImageModal src={localBook.thumbnail} onClose={() => setShowImageModal(false)} />
+                    )}
+                </div>
+            );
+        };
+
+        // 6. Memo Input Modal
+        const MemoModal = ({ bookId, onClose, onSaved }) => {
+            const [page, setPage] = useState('');
+            const [quote, setQuote] = useState('');
+            const [comment, setComment] = useState('');
+            const [tagInput, setTagInput] = useState('');
+
+            const handleSave = async () => {
+                if (!quote && !comment) return alert('引用または感想を入力してください');
+
+                const tags = tagInput.split(/[\s,、]+/).filter(t => t).map(t => t.startsWith('#') ? t : `#${t}`);
+
+                await db.memos.add({
+                    id: generateId(),
+                    bookId,
+                    page: page ? parseInt(page) : null,
+                    quote,
+                    comment,
+                    tags,
+                    createdAt: Date.now()
+                });
+                onSaved();
+            };
+
+            return (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center animate-fade-in">
+                    <div className="bg-white w-full sm:w-96 max-h-[90vh] overflow-y-auto rounded-t-xl sm:rounded-xl p-5 shadow-2xl relative">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-lg">メモを追加</h3>
+                            <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><i className="ph ph-x text-xl"></i></button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">ページ数 (任意)</label>
+                                <input type="number" className="w-full bg-gray-50 border rounded p-2 text-sm" placeholder="123" value={page} onChange={e => setPage(e.target.value)} />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">気になった文章 (引用)</label>
+                                <textarea className="w-full bg-gray-50 border rounded p-2 text-sm h-24" placeholder="本の文章をコピペ..." value={quote} onChange={e => setQuote(e.target.value)}></textarea>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">感想・気づき</label>
+                                <textarea className="w-full bg-gray-50 border rounded p-2 text-sm h-24" placeholder="自分の考え..." value={comment} onChange={e => setComment(e.target.value)}></textarea>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">タグ (スペース区切り)</label>
+                                <input type="text" className="w-full bg-gray-50 border rounded p-2 text-sm" placeholder="#お金 #投資" value={tagInput} onChange={e => setTagInput(e.target.value)} />
+                            </div>
+
+                            <button onClick={handleSave} className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold shadow hover:bg-amber-700">
+                                保存する
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 7. Knowledge View (Tags)
+        const KnowledgeView = () => {
+            const [viewMode, setViewMode] = useState('list');
+            const [selectedTag, setSelectedTag] = useState(null);
+            const [tags, setTags] = useState([]);
+            const [filteredMemos, setFilteredMemos] = useState([]);
+
+            useEffect(() => {
+                const loadTags = async () => {
+                    const allMemos = await db.memos.toArray();
+                    const tagCounts = {};
+                    allMemos.forEach(m => {
+                        m.tags.forEach(t => {
+                            tagCounts[t] = (tagCounts[t] || 0) + 1;
+                        });
+                    });
+                    setTags(Object.entries(tagCounts).sort((a, b) => b[1] - a[1]));
+                };
+                loadTags();
+            }, [viewMode]);
+
+            useEffect(() => {
+                if (!selectedTag) return;
+                const loadTaggedMemos = async () => {
+                    const allMemos = await db.memos.toArray();
+                    const targetMemos = allMemos.filter(m => m.tags.includes(selectedTag));
+                    
+                    const enriched = await Promise.all(targetMemos.map(async m => {
+                        const book = await db.books.get(m.bookId);
+                        return { ...m, book };
+                    }));
+                    
+                    setFilteredMemos(enriched.sort((a, b) => b.createdAt - a.createdAt));
+                };
+                loadTaggedMemos();
+            }, [selectedTag]);
+
+            if (viewMode === 'detail' && selectedTag) {
+                return (
+                    <div className="h-full flex flex-col bg-gray-50 pb-20">
+                        <div className="bg-white p-3 border-b flex items-center gap-2 sticky top-0 z-10">
+                            <button onClick={() => setViewMode('list')} className="p-1"><i className="ph ph-arrow-left text-lg"></i></button>
+                            <h2 className="font-bold text-lg text-amber-700">{selectedTag}</h2>
+                            <span className="text-xs text-gray-500 ml-auto">{filteredMemos.length}件のナレッジ</span>
+                        </div>
+                        <div className="p-4 space-y-4 overflow-y-auto">
+                            {filteredMemos.map(memo => (
+                                <div key={memo.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-50">
+                                        <div className="w-6 h-8 bg-gray-200 flex-shrink-0">
+                                            {memo.book?.thumbnail && <img src={memo.book.thumbnail} className="w-full h-full object-cover" />}
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-600 truncate">{memo.book?.title || '削除された本'}</span>
+                                        {memo.page && <span className="text-[10px] text-gray-400 ml-auto">P.{memo.page}</span>}
+                                    </div>
+
+                                    {memo.quote && (
+                                        <div className="text-sm italic text-gray-600 mb-2 pl-2 border-l-2 border-amber-300">
+                                            {memo.quote}
+                                        </div>
+                                    )}
+                                    <div className="text-sm">{memo.comment}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="h-full flex flex-col bg-gray-50 pb-20">
+                    <div className="p-4 bg-white shadow-sm sticky top-0 z-10">
+                        <h2 className="font-bold text-lg flex items-center gap-2">
+                            <i className="ph-fill ph-hash"></i> ナレッジタグ一覧
+                        </h2>
+                    </div>
+                    <div className="p-4 grid grid-cols-2 gap-3 overflow-y-auto">
+                        {tags.length === 0 ? (
+                            <div className="col-span-2 text-center text-gray-400 mt-10">
+                                <p>タグがまだありません。</p>
+                                <p className="text-xs">感想入力時に「#タグ」を追加してください。</p>
+                            </div>
+                        ) : (
+                            tags.map(([tag, count]) => (
+                                <button 
+                                    key={tag} 
+                                    onClick={() => { setSelectedTag(tag); setViewMode('detail'); }}
+                                    className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center hover:bg-amber-50 border border-transparent hover:border-amber-200 transition-colors"
+                                >
+                                    <span className="font-bold text-gray-700">{tag}</span>
+                                    <span className="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded-full">{count}</span>
+                                </button>
+                            ))
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // 8. Settings View
+        const SettingsView = ({ currentThemeId, onThemeChange }) => {
+            const handleExport = async () => {
+                const books = await db.books.toArray();
+                const memos = await db.memos.toArray();
+                const data = { books, memos, version: 1, exportedAt: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `book_knowledge_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+            };
+
+            const handleImport = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (!confirm('現在のデータは上書き・統合されます。よろしいですか？')) return;
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.books) await db.books.bulkPut(data.books);
+                        if (data.memos) await db.memos.bulkPut(data.memos);
+                        alert('インポートが完了しました');
+                    } catch (err) {
+                        alert('ファイル形式が正しくありません');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            const handleReset = async () => {
+                if (confirm('本当にすべてのデータを削除しますか？この操作は取り消せません。')) {
+                    await db.delete();
+                    window.location.reload();
+                }
+            };
+
+            return (
+                <div className="h-full flex flex-col bg-gray-50 pb-20">
+                     <div className="p-4 bg-white shadow-sm sticky top-0 z-10">
+                        <h2 className="font-bold text-lg flex items-center gap-2">
+                            <i className="ph-fill ph-gear"></i> 設定
+                        </h2>
+                    </div>
+                    <div className="p-4 space-y-6">
+                        
+                        {/* Theme Settings */}
+                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                            <h3 className="font-bold text-gray-700 mb-3">本棚の背景テーマ</h3>
+                            <div className="space-y-2">
+                                {Object.values(THEMES).map(theme => (
+                                    <label key={theme.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${currentThemeId === theme.id ? 'border-amber-500 bg-amber-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                        <input 
+                                            type="radio" 
+                                            name="theme" 
+                                            value={theme.id} 
+                                            checked={currentThemeId === theme.id} 
+                                            onChange={() => onThemeChange(theme.id)}
+                                            className="text-amber-600 focus:ring-amber-500"
+                                        />
+                                        <span className="text-sm font-bold text-gray-700">{theme.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg shadow-sm">
+                            <h3 className="font-bold text-gray-700 mb-2">データのバックアップ</h3>
+                            <p className="text-xs text-gray-500 mb-4">機種変更時やデータの保全にご利用ください。</p>
+                            
+                            <div className="space-y-3">
+                                <button onClick={handleExport} className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-2 rounded-lg font-bold border border-blue-100 hover:bg-blue-100">
+                                    <i className="ph ph-download-simple"></i> JSONを書き出し
+                                </button>
+                                
+                                <label className="w-full flex items-center justify-center gap-2 bg-gray-50 text-gray-600 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-100 cursor-pointer">
+                                    <i className="ph ph-upload-simple"></i> データを読み込み
+                                    <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg shadow-sm border border-red-100">
+                            <h3 className="font-bold text-red-600 mb-2">危険な操作</h3>
+                            <button onClick={handleReset} className="w-full text-red-500 py-2 rounded-lg font-bold hover:bg-red-50 text-sm border border-red-200">
+                                すべてのデータを削除 (初期化)
+                            </button>
+                        </div>
+                        
+                         <div className="text-center text-xs text-gray-400 mt-8">
+                            BookKnowledge Mock v0.1<br/>
+                            Data is stored locally in your browser.
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Main App ---
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('shelf');
+            const [selectedBook, setSelectedBook] = useState(null);
+            // テーマ管理：LocalStorageから読み出し、無ければデフォルト
+            const [themeId, setThemeId] = useState(() => localStorage.getItem('bk_theme') || 'dark_wood');
+
+            const handleThemeChange = (newThemeId) => {
+                setThemeId(newThemeId);
+                localStorage.setItem('bk_theme', newThemeId);
+            };
+
+            const handleBookClick = (book) => {
+                setSelectedBook(book);
+            };
+
+            const handleBackToShelf = () => {
+                setSelectedBook(null);
+            };
+
+            const handleAddBookComplete = () => {
+                setActiveTab('shelf');
+            };
+
+            let content;
+            if (selectedBook) {
+                content = <BookDetails book={selectedBook} onBack={handleBackToShelf} />;
+            } else {
+                switch (activeTab) {
+                    case 'shelf':
+                        content = <ShelfView onBookClick={handleBookClick} currentThemeId={themeId} />;
+                        break;
+                    case 'search':
+                        content = <SearchView onAddBook={handleAddBookComplete} />;
+                        break;
+                    case 'knowledge':
+                        content = <KnowledgeView />;
+                        break;
+                    case 'settings':
+                        content = <SettingsView currentThemeId={themeId} onThemeChange={handleThemeChange} />;
+                        break;
+                    default:
+                        content = <ShelfView currentThemeId={themeId} />;
+                }
+            }
+
+            return (
+                <div className="h-full w-full bg-white relative">
+                    {content}
+                    {!selectedBook && <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
