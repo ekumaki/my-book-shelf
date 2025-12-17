@@ -54,7 +54,7 @@ export default function MemoModal({ bookId, onClose, onSaved }: MemoModalProps) 
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-500 mb-1">感想・気づき</label>
+                        <label className="block text-xs font-bold text-gray-500 mb-1">感想・メモ</label>
                         <textarea className="w-full bg-gray-50 border rounded p-2 text-sm h-24" placeholder="自分の考え..." value={comment} onChange={e => setComment(e.target.value)}></textarea>
                     </div>
 

@@ -28,7 +28,7 @@ export default function ShelfView() {
             collection = collection.filter(b => b.status === filter);
         }
         if (monthFilter !== 'all') {
-            collection = collection.filter(b => b.finishedDate && b.finishedDate.startsWith(monthFilter));
+            collection = collection.filter(b => b.status === 'read' && b.finishedDate && b.finishedDate.startsWith(monthFilter));
         }
         return collection;
     }, [filter, sort, monthFilter]);
@@ -37,7 +37,9 @@ export default function ShelfView() {
         const all = await db.books.toArray();
         const s = new Set<string>();
         all.forEach(b => {
-            if (b.finishedDate) s.add(b.finishedDate.substring(0, 7));
+            if (b.status === 'read' && b.finishedDate) {
+                s.add(b.finishedDate.substring(0, 7));
+            }
         });
         return Array.from(s).sort().reverse();
     }, []) || [];

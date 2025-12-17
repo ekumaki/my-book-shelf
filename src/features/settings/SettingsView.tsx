@@ -81,7 +81,7 @@ export default function SettingsView() {
 
                     <div className="space-y-3">
                         <button onClick={handleExport} className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-2 rounded-lg font-bold border border-blue-100 hover:bg-blue-100 transition-colors">
-                            <DownloadSimple size={20} /> JSONを書き出し
+                            <DownloadSimple size={20} /> データを書き出し
                         </button>
 
                         <label className="w-full flex items-center justify-center gap-2 bg-gray-50 text-gray-600 py-2 rounded-lg font-bold border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
