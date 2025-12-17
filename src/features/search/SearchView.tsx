@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../../db/db';
 import { Spinner, CheckCircle, Plus } from '@phosphor-icons/react';
 import type { Book } from '../../types';
@@ -19,6 +19,7 @@ export default function SearchView() {
     const [results, setResults] = useState<GoogleBookItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [existingIsbns, setExistingIsbns] = useState<Set<string>>(new Set());
+    const resultsContainerRef = useRef<HTMLDivElement | null>(null);
 
     // Load existing ISBNs to check duplicates
     useEffect(() => {
@@ -31,6 +32,8 @@ export default function SearchView() {
         if (e) e.preventDefault();
         if (!query) return;
         setLoading(true);
+        // Reset scroll so results are shown from the top on every search
+        resultsContainerRef.current?.scrollTo({ top: 0 });
         try {
             const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=20`);
             const data = await res.json();
@@ -46,6 +49,11 @@ export default function SearchView() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // Also reset when results change (e.g., hot reload / async updates)
+        resultsContainerRef.current?.scrollTo({ top: 0 });
+    }, [results.length]);
 
     const handleAdd = async (item: GoogleBookItem) => {
         const info = item.volumeInfo;
@@ -69,15 +77,15 @@ export default function SearchView() {
     };
 
     return (
-        <div className="h-full flex flex-col bg-gray-50">
-            <div className="bg-white p-4 shadow-sm z-10 sticky top-0">
+        <div className="h-full min-h-0 flex flex-col bg-gray-50 overflow-hidden">
+            <div className="bg-white p-4 shadow-sm z-10 flex-shrink-0">
                 <form onSubmit={searchBooks} className="flex gap-2">
                     <input
                         type="text"
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         placeholder="タイトル、著者、ISBN..."
-                        className="flex-1 bg-gray-100 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        className="flex-1 bg-gray-100 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                     <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm min-w-[60px] flex justify-center items-center">
                         {loading ? <Spinner className="animate-spin" size={20} /> : '検索'}
@@ -85,7 +93,7 @@ export default function SearchView() {
                 </form>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 pb-20">
+            <div ref={resultsContainerRef} className="flex-1 overflow-y-auto p-4 pb-20 min-h-0 overscroll-contain">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {results.map(item => {
                         const info = item.volumeInfo;

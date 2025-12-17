@@ -92,7 +92,7 @@ export default function SettingsView() {
                 </div>
 
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-red-100">
-                    <h3 className="font-bold text-red-600 mb-2">危険な操作</h3>
+                    <h3 className="font-bold text-red-600 mb-2">データ削除</h3>
                     <button onClick={handleReset} className="w-full text-red-500 py-2 rounded-lg font-bold hover:bg-red-50 text-sm border border-red-200 transition-colors flex items-center justify-center gap-2">
                         <Trash size={18} /> すべてのデータを削除 (初期化)
                     </button>
