@@ -21,7 +21,7 @@ export interface Memo {
     createdAt: number; // Unix Timestamp
 }
 
-export type ThemeId = 'dark_wood' | 'light_wood';
+export type ThemeId = 'dark_wood' | 'light_wood' | 'pure_white';
 
 export interface Theme {
     id: ThemeId;
