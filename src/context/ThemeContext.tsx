@@ -21,6 +21,15 @@ const THEMES: Record<ThemeId, Theme> = {
         subTextColor: 'text-gray-600',
         borderColor: 'border-gray-800/20',
         bgColor: 'bg-white/40'
+    },
+    'pure_white': {
+        id: 'pure_white',
+        label: '真っ白',
+        cssClass: 'theme-pure-white',
+        textColor: 'text-gray-900',
+        subTextColor: 'text-gray-600',
+        borderColor: 'border-gray-300',
+        bgColor: 'bg-white'
     }
 };
 

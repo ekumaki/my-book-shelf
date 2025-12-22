@@ -30,14 +30,8 @@ export default function BookDetailsView() {
         const currentStatus = book.status || 'unread';
         const nextStatus = STATUS_CONFIG[currentStatus].next;
 
-        let finishedDateUpdate = book.finishedDate;
-        if (nextStatus === 'read' && !finishedDateUpdate) {
-            finishedDateUpdate = new Date().toISOString().slice(0, 10);
-        }
-
         await db.books.update(book.id, {
-            status: nextStatus,
-            finishedDate: finishedDateUpdate
+            status: nextStatus
         });
     };
 
@@ -93,20 +87,35 @@ export default function BookDetailsView() {
                                 <span className="text-[10px] opacity-60 ml-1">(タップで変更)</span>
                             </button>
 
-                            {(book.status === 'read' || book.finishedDate) && (
-                                <div className="flex items-center gap-2 bg-gray-50 p-2 rounded border border-gray-200 w-full">
-                                    <CalendarCheck className="text-gray-400 text-sm" />
-                                    <div className="flex-1">
-                                        <label className="text-[10px] font-bold text-gray-500 block">読了日</label>
-                                        <input
-                                            type="date"
-                                            value={book.finishedDate || ''}
-                                            onChange={handleDateChange}
-                                            className="bg-transparent text-sm text-gray-700 w-full focus:outline-none font-medium"
-                                        />
-                                    </div>
+                            <div className={clsx(
+                                "flex items-center gap-2 p-2 rounded border w-full",
+                                book.status === 'read' 
+                                    ? "bg-gray-50 border-gray-200" 
+                                    : "bg-gray-100 border-gray-300 opacity-60"
+                            )}>
+                                <CalendarCheck className={clsx(
+                                    "text-sm",
+                                    book.status === 'read' ? "text-gray-400" : "text-gray-400"
+                                )} />
+                                <div className="flex-1">
+                                    <label className={clsx(
+                                        "text-[10px] font-bold block",
+                                        book.status === 'read' ? "text-gray-500" : "text-gray-400"
+                                    )}>読了日</label>
+                                    <input
+                                        type="date"
+                                        value={book.finishedDate || ''}
+                                        onChange={handleDateChange}
+                                        disabled={book.status !== 'read'}
+                                        className={clsx(
+                                            "bg-transparent text-sm w-full focus:outline-none font-medium",
+                                            book.status === 'read' 
+                                                ? "text-gray-700 cursor-pointer" 
+                                                : "text-gray-400 cursor-not-allowed"
+                                        )}
+                                    />
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>
