@@ -85,8 +85,8 @@ export default function ShelfView() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pb-20 pt-8 px-2 relative">
-                <div className="flex flex-wrap items-end gap-y-12">
+            <div className="flex-1 overflow-y-auto pb-20 pt-4 px-2 relative">
+                <div className="flex flex-wrap items-end gap-y-4">
                     {!books || books.length === 0 ? (
                         <div className={`w-full h-64 flex flex-col items-center justify-center ${theme.subTextColor}`}>
                             <Books size={48} className="mb-2 opacity-50" />

@@ -6,7 +6,7 @@
     height: 100%;
   }
   body {
-    /* Keep the app horizontally centered on desktop, but full width on mobile.
+    /* Full width on mobile, centered on desktop.
        Vertical centering + overflow-hidden caused "mid-list" rendering and no scroll. */
     @apply antialiased text-gray-900 bg-gray-900 overflow-hidden select-none;
   }

@@ -10,7 +10,7 @@ export default function Layout() {
         <div
             id="app-root"
             className={clsx(
-                "h-screen w-full md:max-w-md md:mx-auto bg-white md:shadow-2xl relative flex flex-col overflow-hidden",
+                "h-screen w-full md:max-w-sm md:mx-auto bg-white md:shadow-2xl relative flex flex-col overflow-hidden",
                 theme.cssClass,
                 theme.textColor
             )}

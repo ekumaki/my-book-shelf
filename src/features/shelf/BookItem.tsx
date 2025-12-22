@@ -12,7 +12,7 @@ export default function BookItem({ book }: BookItemProps) {
     return (
         <div
             onClick={() => navigate(`/book/${book.id}`)}
-            className="cursor-pointer flex flex-col items-center w-[25%] sm:w-[20%] md:w-[120px] px-1 sm:px-2 mb-0 relative group book-spine shrink-0"
+            className="cursor-pointer flex flex-col items-center w-[33.333%] px-1 sm:px-2 mb-0 relative group book-spine shrink-0"
         >
             <div className="w-full aspect-[2/3] bg-gray-200 rounded-sm overflow-hidden shadow-md relative">
                 {book.thumbnail ? (
