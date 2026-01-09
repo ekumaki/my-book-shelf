@@ -11,7 +11,8 @@ import AddToShelfModal from './AddToShelfModal';
 import clsx from 'clsx';
 
 const STATUS_CONFIG: Record<BookStatus, { label: string; color: string; next: BookStatus }> = {
-    unread: { label: '未読', color: 'bg-gray-200 text-gray-600', next: 'reading' },
+    unread: { label: '積読', color: 'bg-gray-200 text-gray-600', next: 'wants' },
+    wants: { label: '読みたい', color: 'bg-pink-100 text-pink-700', next: 'reading' },
     reading: { label: '読書中', color: 'bg-blue-100 text-blue-700', next: 'read' },
     read: { label: '読了', color: 'bg-green-100 text-green-700', next: 'unread' }
 };
