@@ -4,9 +4,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import type { BookStatus } from '../../types';
 
-import { ArrowLeft, Trash, CheckCircle, CalendarCheck, Quotes, Plus } from '@phosphor-icons/react';
+import { ArrowLeft, Trash, CheckCircle, CalendarCheck, Quotes, Plus, BookmarkSimple } from '@phosphor-icons/react';
 import MemoModal from './MemoModal';
 import ImageModal from './ImageModal';
+import AddToShelfModal from './AddToShelfModal';
 import clsx from 'clsx';
 
 const STATUS_CONFIG: Record<BookStatus, { label: string; color: string; next: BookStatus }> = {
@@ -20,6 +21,7 @@ export default function BookDetailsView() {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+    const [showShelfModal, setShowShelfModal] = useState(false);
 
     const book = useLiveQuery(() => db.books.get(id!), [id]);
     const memos = useLiveQuery(() => db.memos.where('bookId').equals(id!).reverse().sortBy('createdAt'), [id]);
@@ -89,8 +91,8 @@ export default function BookDetailsView() {
 
                             <div className={clsx(
                                 "flex items-center gap-2 p-2 rounded border w-full",
-                                book.status === 'read' 
-                                    ? "bg-gray-50 border-gray-200" 
+                                book.status === 'read'
+                                    ? "bg-gray-50 border-gray-200"
                                     : "bg-gray-100 border-gray-300 opacity-60"
                             )}>
                                 <CalendarCheck className={clsx(
@@ -109,13 +111,22 @@ export default function BookDetailsView() {
                                         disabled={book.status !== 'read'}
                                         className={clsx(
                                             "bg-transparent text-sm w-full focus:outline-none font-medium",
-                                            book.status === 'read' 
-                                                ? "text-gray-700 cursor-pointer" 
+                                            book.status === 'read'
+                                                ? "text-gray-700 cursor-pointer"
                                                 : "text-gray-400 cursor-not-allowed"
                                         )}
                                     />
                                 </div>
                             </div>
+
+                            {/* Add to Shelf Button */}
+                            <button
+                                onClick={() => setShowShelfModal(true)}
+                                className="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 font-medium mt-2 transition-colors"
+                            >
+                                <BookmarkSimple weight="fill" size={16} />
+                                本棚に追加
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -185,6 +196,10 @@ export default function BookDetailsView() {
 
             {showImageModal && book.thumbnail && (
                 <ImageModal src={book.thumbnail} onClose={() => setShowImageModal(false)} />
+            )}
+
+            {showShelfModal && (
+                <AddToShelfModal bookId={book.id} onClose={() => setShowShelfModal(false)} />
             )}
         </div>
     );

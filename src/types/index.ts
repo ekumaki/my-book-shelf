@@ -21,6 +21,14 @@ export interface Memo {
     createdAt: number; // Unix Timestamp
 }
 
+export interface Shelf {
+    id: string; // UUID
+    title: string;
+    description?: string;
+    bookIds: string[];
+    createdAt: number; // Unix Timestamp
+}
+
 export type ThemeId = 'dark_wood' | 'light_wood' | 'pure_white';
 
 export interface Theme {

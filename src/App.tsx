@@ -6,6 +6,7 @@ import SearchView from './features/search/SearchView';
 import KnowledgeView from './features/knowledge/KnowledgeView';
 import SettingsView from './features/settings/SettingsView';
 import BookDetailsView from './features/book-details/BookDetailsView';
+import ShelfManagerView from './features/shelves/ShelfManagerView';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Route path="knowledge" element={<KnowledgeView />} />
             <Route path="settings" element={<SettingsView />} />
             <Route path="book/:id" element={<BookDetailsView />} />
+            <Route path="shelves" element={<ShelfManagerView />} />
           </Route>
         </Routes>
       </BrowserRouter>
@@ -26,3 +28,4 @@ function App() {
 }
 
 export default App;
+
