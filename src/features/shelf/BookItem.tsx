@@ -22,14 +22,6 @@ export default function BookItem({ book }: BookItemProps) {
                         <span className="line-clamp-3">{book.title}</span>
                     </div>
                 )}
-
-                {/* Status Badge */}
-                {book.status === 'read' && (
-                    <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] px-1 py-0.5 rounded-bl shadow font-bold">読了</div>
-                )}
-                {book.status === 'reading' && (
-                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[10px] px-1 py-0.5 rounded-bl shadow font-bold">読中</div>
-                )}
             </div>
         </div>
     );

@@ -79,7 +79,7 @@ export default function KnowledgeView() {
         <div className="h-full flex flex-col bg-gray-50 pb-20">
             <div className="p-4 bg-white shadow-sm sticky top-0 z-10 text-center border-b">
                 <h2 className="font-bold text-lg flex items-center justify-center gap-2 text-gray-700">
-                    <Hash weight="bold" className="text-amber-600" /> ナレッジタグ一覧
+                    <Hash weight="bold" className="text-gray-900" /> ナレッジタグ一覧
                 </h2>
             </div>
             <div className="p-4 grid grid-cols-2 gap-3 overflow-y-auto flex-1 content-start">
