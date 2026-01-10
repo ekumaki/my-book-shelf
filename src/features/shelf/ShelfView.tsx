@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { useTheme } from '../../context/ThemeContext';
 import BookItem from './BookItem';
-import { Books, CaretDown, SortAscending, BookBookmark, Heart, BookOpen, CheckCircle } from '@phosphor-icons/react';
+import { Books, CaretDown, SortAscending, BookBookmark, Heart, BookOpen, CheckCircle, Star } from '@phosphor-icons/react';
 
 // Smart shelf definitions
 const SMART_SHELVES = [
@@ -17,7 +17,7 @@ const SMART_SHELVES = [
 export default function ShelfView() {
     const { theme, themeId } = useTheme();
     const [sort, setSort] = useState('registeredAt');
-    const [selectedShelfId, setSelectedShelfId] = useState<string>('__all__');
+    const [selectedShelfId, setSelectedShelfId] = useState<string>(() => localStorage.getItem('selected_shelf_id') || '__all__');
     const [showShelfDropdown, setShowShelfDropdown] = useState(false);
     const [showSortMenu, setShowSortMenu] = useState(false);
 
@@ -59,6 +59,7 @@ export default function ShelfView() {
 
     const handleShelfSelect = (shelfId: string) => {
         setSelectedShelfId(shelfId);
+        localStorage.setItem('selected_shelf_id', shelfId);
         setShowShelfDropdown(false);
     };
 
@@ -85,19 +86,22 @@ export default function ShelfView() {
     return (
         <div className="h-full flex flex-col">
             {/* Simplified Header */}
-            <div className={`p-3 ${theme.bgColor} ${isPureWhite ? '' : 'backdrop-blur-sm shadow-md'} flex items-center justify-between z-10 sticky top-0 transition-colors`}>
-                {/* Left: Shelf Selector */}
-                <div className="relative">
+            <div className={`p-3 ${theme.bgColor} ${isPureWhite ? '' : 'backdrop-blur-sm shadow-md'} flex items-center z-10 sticky top-0 transition-colors`}>
+                {/* Left: Spacer (to match right side width for centering) */}
+                <div className="w-10" />
+
+                {/* Center: Shelf Selector */}
+                <div className="flex-1 flex justify-center relative min-w-0">
                     <button
                         onClick={() => { setShowShelfDropdown(!showShelfDropdown); setShowSortMenu(false); }}
-                        className={`flex items-center gap-1 text-lg font-bold ${theme.textColor} hover:opacity-80 transition-opacity`}
+                        className={`flex items-center gap-1 text-lg font-bold ${theme.textColor} hover:opacity-80 transition-opacity max-w-full`}
                     >
-                        {getCurrentShelfLabel()}
-                        <CaretDown size={16} weight="bold" className={`transition-transform ${showShelfDropdown ? 'rotate-180' : ''}`} />
+                        <span className="truncate max-w-[240px] block">{getCurrentShelfLabel()}</span>
+                        <CaretDown size={16} weight="bold" className={`transition-transform shrink-0 ${showShelfDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showShelfDropdown && (
-                        <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border z-50 min-w-[180px] py-1 max-h-80 overflow-y-auto">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white rounded-lg shadow-lg border z-50 min-w-[200px] py-1 max-h-80 overflow-y-auto">
                             {/* Smart Shelves */}
                             {SMART_SHELVES.map(shelf => (
                                 <button
@@ -113,16 +117,14 @@ export default function ShelfView() {
                             {/* Custom Shelves */}
                             {customShelves && customShelves.length > 0 && (
                                 <>
-                                    <div className="border-t my-1" />
-                                    <div className="px-4 py-1 text-xs text-gray-400 font-medium">カスタム本棚</div>
                                     {customShelves.map(shelf => (
                                         <button
                                             key={shelf.id}
                                             onClick={() => handleShelfSelect(shelf.id)}
-                                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-100 ${selectedShelfId === shelf.id ? 'bg-amber-50 text-amber-700 font-medium' : 'text-gray-700'}`}
+                                            className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2 hover:bg-gray-100 ${selectedShelfId === shelf.id ? 'bg-amber-50 text-amber-700 font-medium' : 'text-gray-700'}`}
                                         >
-                                            {shelf.title}
-                                            <span className="text-xs text-gray-400 ml-2">({shelf.bookIds.length})</span>
+                                            <Star size={18} weight="fill" className="shrink-0" />
+                                            <span className="truncate flex-1 text-left">{shelf.title}</span>
                                         </button>
                                     ))}
                                 </>
@@ -135,7 +137,7 @@ export default function ShelfView() {
                 <div className="relative">
                     <button
                         onClick={() => { setShowSortMenu(!showSortMenu); setShowShelfDropdown(false); }}
-                        className={`p-2 ${theme.subTextColor} hover:opacity-80 transition-opacity`}
+                        className={`p-2 ${theme.subTextColor} hover:opacity-80 transition-opacity flex items-center justify-center w-10`}
                     >
                         <SortAscending size={22} weight="bold" />
                     </button>

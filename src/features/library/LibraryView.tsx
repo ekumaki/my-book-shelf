@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import type { Shelf } from '../../types';
-import { Plus, Trash, PencilSimple, Books, Check, X, MagnifyingGlass, BookOpen, Heart, BookBookmark, CheckCircle } from '@phosphor-icons/react';
+import { Plus, Trash, PencilSimple, Books, Check, X, MagnifyingGlass, BookOpen, Heart, BookBookmark, CheckCircle, Bank } from '@phosphor-icons/react';
 import clsx from 'clsx';
 
 // Smart shelves (fixed, cannot be deleted)
@@ -34,6 +34,7 @@ export default function LibraryView() {
     const [formState, setFormState] = useState<ShelfFormState>(initialFormState);
     const [bookFilter, setBookFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [dateFilter, setDateFilter] = useState(''); // YYYY-MM
 
     const shelves = useLiveQuery(() => db.shelves.orderBy('createdAt').reverse().toArray(), []);
     const allBooks = useLiveQuery(() => db.books.orderBy('registeredAt').reverse().toArray(), []);
@@ -55,7 +56,8 @@ export default function LibraryView() {
             book.title.toLowerCase().includes(bookFilter.toLowerCase()) ||
             book.authors.some(a => a.toLowerCase().includes(bookFilter.toLowerCase()));
         const matchesStatus = statusFilter === 'all' || book.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        const matchesDate = !dateFilter || (book.finishedDate && book.finishedDate.startsWith(dateFilter));
+        return matchesSearch && matchesStatus && matchesDate;
     });
 
     const handleNewShelf = () => {
@@ -132,7 +134,10 @@ export default function LibraryView() {
             <div className="h-full flex flex-col bg-gray-50">
                 {/* Header */}
                 <div className="bg-white border-b p-4 shadow-sm z-10 shrink-0">
-                    <h1 className="text-xl font-bold text-center">ライブラリ</h1>
+                    <div className="flex items-center justify-center gap-2">
+                        <Bank size={24} className="text-gray-900" weight="fill" />
+                        <h1 className="text-xl font-bold text-gray-900">ライブラリ</h1>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4">
@@ -143,7 +148,7 @@ export default function LibraryView() {
                             {SMART_SHELVES.map(shelf => (
                                 <div
                                     key={shelf.id}
-                                    className="bg-white rounded-lg shadow-sm border p-3 flex items-center gap-3"
+                                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 flex items-center gap-3"
                                 >
                                     <shelf.icon size={20} className="text-amber-600" weight="fill" />
                                     <span className="flex-1 font-medium text-gray-800">{shelf.title}</span>
@@ -167,7 +172,7 @@ export default function LibraryView() {
                         </div>
                         {!shelves || shelves.length === 0 ? (
                             <div className="text-center py-8 text-gray-400 bg-white rounded-lg border border-dashed">
-                                <Books size={32} className="mx-auto mb-2 opacity-50" />
+                                <Bank size={32} className="mx-auto mb-2 opacity-50" />
                                 <p className="text-sm">カスタム本棚はありません</p>
                             </div>
                         ) : (
@@ -175,7 +180,7 @@ export default function LibraryView() {
                                 {shelves.map(shelf => (
                                     <div
                                         key={shelf.id}
-                                        className="bg-white rounded-lg shadow-sm border p-3 flex items-center gap-3"
+                                        className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 flex items-center gap-3"
                                     >
                                         <div className="flex-1">
                                             <h3 className="font-medium text-gray-800">{shelf.title}</h3>
@@ -229,24 +234,14 @@ export default function LibraryView() {
             <div className="flex-1 overflow-y-auto">
                 {/* Form Fields */}
                 <div className="bg-white p-4 border-b">
-                    <div className="mb-4">
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">本棚名 *</label>
                         <input
                             type="text"
                             value={formState.title}
                             onChange={e => setFormState(prev => ({ ...prev, title: e.target.value }))}
                             placeholder="例：2025年に読みたい本"
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">説明（任意）</label>
-                        <input
-                            type="text"
-                            value={formState.description}
-                            onChange={e => setFormState(prev => ({ ...prev, description: e.target.value }))}
-                            placeholder="例：今年中に読破したい積読リスト"
-                            className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
                         />
                     </div>
                 </div>
@@ -266,13 +261,13 @@ export default function LibraryView() {
                                 value={bookFilter}
                                 onChange={e => setBookFilter(e.target.value)}
                                 placeholder="タイトル・著者で検索..."
-                                className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
                             />
                         </div>
                         <select
                             value={statusFilter}
                             onChange={e => setStatusFilter(e.target.value)}
-                            className="border rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                            className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
                         >
                             <option value="all">すべて</option>
                             <option value="unread">積読</option>
@@ -280,6 +275,14 @@ export default function LibraryView() {
                             <option value="reading">読書中</option>
                             <option value="read">読了</option>
                         </select>
+                        {statusFilter === 'read' && (
+                            <input
+                                type="month"
+                                value={dateFilter}
+                                onChange={e => setDateFilter(e.target.value)}
+                                className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
+                            />
+                        )}
                     </div>
 
                     {/* Book List */}
@@ -295,7 +298,7 @@ export default function LibraryView() {
                                     <label
                                         key={book.id}
                                         className={clsx(
-                                            "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors",
+                                            "flex items-center gap-3 p-3 rounded-lg border border-gray-100 cursor-pointer transition-colors",
                                             isSelected ? "bg-amber-50 border-amber-300" : "bg-white hover:bg-gray-50"
                                         )}
                                     >
