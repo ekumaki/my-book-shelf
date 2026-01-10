@@ -163,7 +163,7 @@ export default function ShelfView() {
                 className="flex-1 overflow-y-auto pb-20 pt-4 px-0 relative"
                 onClick={() => { setShowShelfDropdown(false); setShowSortMenu(false); }}
             >
-                <div>
+                <div className="flex flex-wrap items-end gap-y-4">
                     {!books || books.length === 0 ? (
                         <div className={`w-full h-64 flex flex-col items-center justify-center ${theme.subTextColor}`}>
                             <Books size={48} className="mb-2 opacity-50" />
