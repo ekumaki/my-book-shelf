@@ -160,10 +160,10 @@ export default function ShelfView() {
 
             {/* Book Grid */}
             <div
-                className="flex-1 overflow-y-auto pb-20 pt-4 px-2 relative"
+                className="flex-1 overflow-y-auto pb-20 pt-4 px-0 relative"
                 onClick={() => { setShowShelfDropdown(false); setShowSortMenu(false); }}
             >
-                <div className="flex flex-wrap items-end gap-y-4">
+                <div>
                     {!books || books.length === 0 ? (
                         <div className={`w-full h-64 flex flex-col items-center justify-center ${theme.subTextColor}`}>
                             <Books size={48} className="mb-2 opacity-50" />
@@ -171,13 +171,20 @@ export default function ShelfView() {
                             <p className="text-sm opacity-70">検索画面から本を追加してください</p>
                         </div>
                     ) : (
-                        books.map((book) => (
-                            <BookItem key={book.id} book={book} />
+                        Array.from({ length: Math.ceil(books.length / 3) }, (_, i) =>
+                            books.slice(i * 3, i * 3 + 3)
+                        ).map((row, rowIndex) => (
+                            <div key={rowIndex} className="mb-4">
+                                <div className="flex items-end px-2">
+                                    {row.map((book) => (
+                                        <BookItem key={book.id} book={book} />
+                                    ))}
+                                </div>
+                                <div className="w-full h-4 shelf-board"></div>
+                            </div>
                         ))
                     )}
                 </div>
-                {/* Decorative bottom shelf */}
-                <div className="w-full h-4 shelf-board mt-4"></div>
                 <div className="h-32"></div>
             </div>
         </div>

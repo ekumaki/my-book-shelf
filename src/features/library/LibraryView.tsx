@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '../../db/db';
 import type { Shelf } from '../../types';
-import { Plus, Trash, PencilSimple, Books, Check, X, MagnifyingGlass, BookOpen, Heart, BookBookmark, CheckCircle, Bank } from '@phosphor-icons/react';
+import { Plus, Trash, Books, Check, X, MagnifyingGlass, BookOpen, Heart, BookBookmark, CheckCircle, Bank, Star, Info, ArrowSquareOut } from '@phosphor-icons/react';
 import clsx from 'clsx';
 
 // Smart shelves (fixed, cannot be deleted)
@@ -30,6 +31,8 @@ const initialFormState: ShelfFormState = {
 };
 
 export default function LibraryView() {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [mode, setMode] = useState<Mode>('list');
     const [formState, setFormState] = useState<ShelfFormState>(initialFormState);
     const [bookFilter, setBookFilter] = useState('');
@@ -38,6 +41,20 @@ export default function LibraryView() {
 
     const shelves = useLiveQuery(() => db.shelves.orderBy('createdAt').reverse().toArray(), []);
     const allBooks = useLiveQuery(() => db.books.orderBy('registeredAt').reverse().toArray(), []);
+
+    // Handle editing via navigation state
+    useEffect(() => {
+        const state = location.state as { editShelfId?: string } | null;
+        if (state?.editShelfId) {
+            db.shelves.get(state.editShelfId).then(shelf => {
+                if (shelf) {
+                    handleEditShelf(shelf);
+                    // Clear state so it doesn't reopen on refresh
+                    window.history.replaceState({}, document.title);
+                }
+            });
+        }
+    }, [location.state, shelves]); // Added shelves dependency to ensure we have data if needed
 
     // Count books by status
     const bookCounts = useLiveQuery(async () => {
@@ -75,11 +92,7 @@ export default function LibraryView() {
         setMode('edit');
     };
 
-    const handleDeleteShelf = async (shelfId: string) => {
-        if (confirm('この本棚を削除しますか？')) {
-            await db.shelves.delete(shelfId);
-        }
-    };
+
 
     const handleSave = async () => {
         if (!formState.title.trim()) {
@@ -128,6 +141,24 @@ export default function LibraryView() {
         return bookCounts[status as keyof typeof bookCounts] || 0;
     };
 
+    const handleEditSmartShelf = async (shelf: typeof SMART_SHELVES[number]) => {
+        if (!allBooks) return;
+
+        const shelfBookIds = allBooks
+            .filter(b => !shelf.status || b.status === shelf.status)
+            .map(b => b.id);
+
+        setFormState({
+            id: shelf.id,
+            title: shelf.title,
+            description: '',
+            selectedBookIds: new Set(shelfBookIds)
+        });
+        setMode('edit');
+    };
+
+    const isSmartShelf = formState.id?.startsWith('__');
+
     // List Mode
     if (mode === 'list') {
         return (
@@ -148,7 +179,8 @@ export default function LibraryView() {
                             {SMART_SHELVES.map(shelf => (
                                 <div
                                     key={shelf.id}
-                                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 flex items-center gap-3"
+                                    onClick={() => handleEditSmartShelf(shelf)}
+                                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
                                 >
                                     <shelf.icon size={20} className="text-amber-600" weight="fill" />
                                     <span className="flex-1 font-medium text-gray-800">{shelf.title}</span>
@@ -180,8 +212,10 @@ export default function LibraryView() {
                                 {shelves.map(shelf => (
                                     <div
                                         key={shelf.id}
-                                        className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 flex items-center gap-3"
+                                        onClick={() => handleEditShelf(shelf)}
+                                        className="bg-white rounded-lg shadow-sm border border-gray-100 p-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
                                     >
+                                        <Star size={20} className="text-amber-600" weight="fill" />
                                         <div className="flex-1">
                                             <h3 className="font-medium text-gray-800">{shelf.title}</h3>
                                             {shelf.description && (
@@ -189,18 +223,6 @@ export default function LibraryView() {
                                             )}
                                         </div>
                                         <span className="text-sm text-gray-400">{shelf.bookIds.length}冊</span>
-                                        <button
-                                            onClick={() => handleEditShelf(shelf)}
-                                            className="text-gray-400 hover:text-gray-600 p-1"
-                                        >
-                                            <PencilSimple size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteShelf(shelf.id)}
-                                            className="text-red-400 hover:text-red-600 p-1"
-                                        >
-                                            <Trash size={18} />
-                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -220,18 +242,28 @@ export default function LibraryView() {
                     <X size={20} />
                 </button>
                 <h2 className="font-bold flex-1">
-                    {formState.id ? '本棚を編集' : '新しい本棚'}
+                    {isSmartShelf ? '本棚を確認' : (formState.id ? '本棚を編集' : '新しい本棚')}
                 </h2>
-                <button
-                    onClick={handleSave}
-                    className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
-                >
-                    <Check size={16} weight="bold" />
-                    保存
-                </button>
+                {!isSmartShelf && (
+                    <button
+                        onClick={handleSave}
+                        className="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
+                    >
+                        <Check size={16} weight="bold" />
+                        保存
+                    </button>
+                )}
             </div>
 
             <div className="flex-1 overflow-y-auto">
+                {/* Read-only Notice */}
+                {isSmartShelf && (
+                    <div className="bg-blue-50 border-b border-blue-100 p-3 flex items-center gap-2 text-blue-700 text-sm">
+                        <Info size={18} weight="fill" />
+                        <span>スマート本棚は自動更新されるため、編集できません。</span>
+                    </div>
+                )}
+
                 {/* Form Fields */}
                 <div className="bg-white p-4 border-b">
                     <div>
@@ -239,17 +271,39 @@ export default function LibraryView() {
                         <input
                             type="text"
                             value={formState.title}
-                            onChange={e => setFormState(prev => ({ ...prev, title: e.target.value }))}
+                            onChange={e => !isSmartShelf && setFormState(prev => ({ ...prev, title: e.target.value }))}
                             placeholder="例：2025年に読みたい本"
-                            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
+                            disabled={isSmartShelf}
+                            className={clsx(
+                                "w-full border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm",
+                                isSmartShelf ? "bg-gray-50 text-gray-400" : "text-gray-900"
+                            )}
                         />
                     </div>
                 </div>
 
+                {/* Delete Button for existing shelves */}
+                {formState.id && !isSmartShelf && (
+                    <div className="p-4 bg-white border-b">
+                        <button
+                            onClick={() => {
+                                if (confirm('この本棚を削除しますか？')) {
+                                    db.shelves.delete(formState.id!);
+                                    setMode('list');
+                                }
+                            }}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 rounded-lg border border-red-100 hover:bg-red-100 transition-colors font-medium"
+                        >
+                            <Trash size={18} weight="bold" />
+                            本棚を削除
+                        </button>
+                    </div>
+                )}
+
                 {/* Book Selection */}
                 <div className="p-4">
                     <h3 className="font-bold text-gray-700 mb-3">
-                        本を選択 ({formState.selectedBookIds.size}冊選択中)
+                        {isSmartShelf ? `登録されている本 (${formState.selectedBookIds.size}冊)` : `本を選択 (${formState.selectedBookIds.size}冊選択中)`}
                     </h3>
 
                     {/* Filters */}
@@ -305,20 +359,45 @@ export default function LibraryView() {
                                         <input
                                             type="checkbox"
                                             checked={isSelected}
-                                            onChange={() => toggleBookSelection(book.id)}
-                                            className="w-5 h-5 rounded text-amber-600 focus:ring-amber-500"
+                                            onChange={() => !isSmartShelf && toggleBookSelection(book.id)}
+                                            disabled={isSmartShelf}
+                                            className={clsx(
+                                                "w-5 h-5 rounded focus:ring-amber-500",
+                                                isSmartShelf ? "text-gray-400 bg-gray-100 border-gray-300" : "text-amber-600"
+                                            )}
                                         />
                                         {book.thumbnail ? (
-                                            <img src={book.thumbnail} alt="" className="w-10 h-14 object-cover rounded shadow-sm" />
+                                            <img
+                                                src={book.thumbnail}
+                                                alt=""
+                                                className={clsx(
+                                                    "w-10 h-14 object-cover rounded shadow-sm transition-opacity",
+                                                    isSmartShelf && !isSelected && "opacity-40 grayscale-[50%]"
+                                                )}
+                                            />
                                         ) : (
                                             <div className="w-10 h-14 bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-400">
                                                 No Image
                                             </div>
                                         )}
-                                        <div className="flex-1 min-w-0">
+                                        <div className={clsx(
+                                            "flex-1 min-w-0 transition-opacity",
+                                            isSmartShelf && !isSelected && "opacity-40"
+                                        )}>
                                             <p className="font-medium text-gray-800 text-sm truncate">{book.title}</p>
                                             <p className="text-xs text-gray-500 truncate">{book.authors.join(', ')}</p>
                                         </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                navigate(`/book/${book.id}`);
+                                            }}
+                                            className="p-2 text-gray-400 hover:text-amber-600 transition-colors"
+                                            title="詳細を見る"
+                                        >
+                                            <ArrowSquareOut size={20} />
+                                        </button>
                                     </label>
                                 );
                             })}

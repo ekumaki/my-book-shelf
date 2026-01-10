@@ -69,9 +69,9 @@ export default function BookDetailsView() {
             <div className="flex-1 overflow-y-auto pb-24">
                 {/* Book Info Header */}
                 <div className="bg-white p-4 mb-4 shadow-sm flex gap-4">
-                    <div className="w-24 flex-shrink-0 shadow-md cursor-zoom-in group relative" onClick={() => setShowImageModal(true)}>
+                    <div className="w-24 flex-shrink-0 cursor-zoom-in group relative" onClick={() => setShowImageModal(true)}>
                         {book.thumbnail ? (
-                            <img src={book.thumbnail} className="w-full h-auto" />
+                            <img src={book.thumbnail} className="w-full h-auto shadow-md rounded-sm" />
                         ) : (
                             <div className="w-full h-32 bg-gray-200 flex items-center justify-center text-xs">No Image</div>
                         )}
