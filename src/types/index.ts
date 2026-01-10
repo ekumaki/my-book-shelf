@@ -1,4 +1,4 @@
-export type BookStatus = 'unread' | 'reading' | 'read';
+export type BookStatus = 'unread' | 'wants' | 'reading' | 'read';
 
 export interface Book {
     id: string; // UUID
@@ -21,7 +21,15 @@ export interface Memo {
     createdAt: number; // Unix Timestamp
 }
 
-export type ThemeId = 'dark_wood' | 'light_wood';
+export interface Shelf {
+    id: string; // UUID
+    title: string;
+    description?: string;
+    bookIds: string[];
+    createdAt: number; // Unix Timestamp
+}
+
+export type ThemeId = 'dark_wood' | 'light_wood' | 'pure_white';
 
 export interface Theme {
     id: ThemeId;

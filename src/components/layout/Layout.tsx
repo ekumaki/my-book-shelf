@@ -7,8 +7,15 @@ export default function Layout() {
     const { theme } = useTheme();
 
     return (
-        <div id="app-root" className={clsx("h-full w-full max-w-md bg-white shadow-2xl relative flex flex-col overflow-hidden", theme.cssClass, theme.textColor)}>
-            <div className="flex-1 overflow-hidden relative">
+        <div
+            id="app-root"
+            className={clsx(
+                "h-screen w-full md:max-w-sm md:mx-auto bg-white md:shadow-2xl relative flex flex-col overflow-hidden",
+                theme.cssClass,
+                theme.textColor
+            )}
+        >
+            <div className="flex-1 min-h-0 overflow-hidden">
                 <Outlet />
             </div>
             <NavBar />

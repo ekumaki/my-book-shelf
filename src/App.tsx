@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import ShelfView from './features/shelf/ShelfView';
 import SearchView from './features/search/SearchView';
+import LibraryView from './features/library/LibraryView';
 import KnowledgeView from './features/knowledge/KnowledgeView';
 import SettingsView from './features/settings/SettingsView';
 import BookDetailsView from './features/book-details/BookDetailsView';
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<ShelfView />} />
             <Route path="search" element={<SearchView />} />
+            <Route path="library" element={<LibraryView />} />
             <Route path="knowledge" element={<KnowledgeView />} />
             <Route path="settings" element={<SettingsView />} />
             <Route path="book/:id" element={<BookDetailsView />} />
@@ -26,3 +28,5 @@ function App() {
 }
 
 export default App;
+
+
