@@ -1,4 +1,4 @@
-export type BookStatus = 'unread' | 'reading' | 'read';
+export type BookStatus = 'unread' | 'wants' | 'reading' | 'read';
 
 export interface Book {
     id: string; // UUID
@@ -18,6 +18,14 @@ export interface Memo {
     quote?: string;
     comment?: string;
     tags: string[];
+    createdAt: number; // Unix Timestamp
+}
+
+export interface Shelf {
+    id: string; // UUID
+    title: string;
+    description?: string;
+    bookIds: string[];
     createdAt: number; // Unix Timestamp
 }
 

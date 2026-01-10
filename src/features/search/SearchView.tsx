@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../db/db';
-import { Spinner, CheckCircle, Plus } from '@phosphor-icons/react';
+import { Spinner, CheckCircle, Plus, ArrowSquareOut } from '@phosphor-icons/react';
 import type { Book } from '../../types';
 
 // Loose type for Google Books API response
@@ -15,16 +16,21 @@ interface GoogleBookItem {
 }
 
 export default function SearchView() {
+    const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<GoogleBookItem[]>([]);
     const [loading, setLoading] = useState(false);
-    const [existingIsbns, setExistingIsbns] = useState<Set<string>>(new Set());
+    const [registeredBooks, setRegisteredBooks] = useState<Map<string, string>>(new Map());
     const resultsContainerRef = useRef<HTMLDivElement | null>(null);
 
     // Load existing ISBNs to check duplicates
     useEffect(() => {
         db.books.toArray().then(books => {
-            setExistingIsbns(new Set(books.map(b => b.isbn).filter(Boolean)));
+            const map = new Map<string, string>();
+            books.forEach(b => {
+                if (b.isbn) map.set(b.isbn, b.id);
+            });
+            setRegisteredBooks(map);
         });
     }, []);
 
@@ -73,7 +79,11 @@ export default function SearchView() {
         };
 
         await db.books.add(newBook);
-        setExistingIsbns(prev => new Set(prev).add(isbn));
+        setRegisteredBooks(prev => {
+            const next = new Map(prev);
+            if (isbn) next.set(isbn, newBook.id);
+            return next;
+        });
     };
 
     return (
@@ -99,7 +109,6 @@ export default function SearchView() {
                         const info = item.volumeInfo;
                         const isbn13 = info.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier;
                         const isbn = isbn13 || info.industryIdentifiers?.[0]?.identifier;
-                        const isRegistered = isbn ? existingIsbns.has(isbn) : false;
 
                         return (
                             <div key={item.id} className="bg-white p-3 rounded-lg shadow flex gap-3">
@@ -112,10 +121,18 @@ export default function SearchView() {
                                     <h3 className="font-bold text-sm line-clamp-2" title={info.title}>{info.title}</h3>
                                     <p className="text-xs text-gray-500 mb-2">{info.authors?.join(', ')}</p>
                                     <div className="mt-auto">
-                                        {isRegistered ? (
-                                            <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
-                                                <CheckCircle weight="fill" /> 登録済み
-                                            </span>
+                                        {isbn && registeredBooks.has(isbn) ? (
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-xs font-bold text-gray-400 flex items-center gap-1">
+                                                    <CheckCircle weight="fill" /> 登録済み
+                                                </span>
+                                                <button
+                                                    onClick={() => navigate(`/book/${registeredBooks.get(isbn!)}`)}
+                                                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs font-bold hover:bg-gray-200 w-full flex items-center justify-center gap-1"
+                                                >
+                                                    詳細を見る <ArrowSquareOut size={14} />
+                                                </button>
+                                            </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleAdd(item)}

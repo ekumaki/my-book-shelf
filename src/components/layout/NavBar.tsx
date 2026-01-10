@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Books, MagnifyingGlass, Lightbulb, Gear } from '@phosphor-icons/react';
+import { Bank, MagnifyingGlass, Books, Lightbulb, Gear } from '@phosphor-icons/react';
 import clsx from 'clsx';
 
 export default function NavBar() {
     const navItems = [
         { to: '/', label: '本棚', icon: Books },
         { to: '/search', label: '探す', icon: MagnifyingGlass },
+        { to: '/library', label: 'ライブラリ', icon: Bank },
         { to: '/knowledge', label: 'ナレッジ', icon: Lightbulb },
         { to: '/settings', label: '設定', icon: Gear },
     ];
