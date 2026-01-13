@@ -15,7 +15,10 @@ interface GoogleBookItem {
     };
 }
 
+import { useTheme } from '../../context/ThemeContext';
+
 export default function SearchView() {
+    const { theme } = useTheme();
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<GoogleBookItem[]>([]);
@@ -87,24 +90,24 @@ export default function SearchView() {
     };
 
     return (
-        <div className="h-full min-h-0 flex flex-col bg-gray-50 overflow-hidden">
-            <div className="bg-white p-4 shadow-sm z-10 flex-shrink-0">
+        <div className="h-full flex flex-col pt-0">
+            <div className={`px-4 py-3 ${theme.bgColor} backdrop-blur-md shadow-md z-10 flex-shrink-0 transition-colors`}>
                 <form onSubmit={searchBooks} className="flex gap-2">
                     <input
                         type="text"
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         placeholder="タイトル、著者、ISBN..."
-                        className="flex-1 bg-gray-100 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
                     />
-                    <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm min-w-[60px] flex justify-center items-center">
+                    <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm min-w-[60px] flex justify-center items-center shadow-lg active:scale-95 transition-transform">
                         {loading ? <Spinner className="animate-spin" size={20} /> : '検索'}
                     </button>
                 </form>
             </div>
 
             <div ref={resultsContainerRef} className="flex-1 overflow-y-auto p-4 pb-20 min-h-0 overscroll-contain">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                     {results.map(item => {
                         const info = item.volumeInfo;
                         const isbn13 = info.industryIdentifiers?.find(id => id.type === 'ISBN_13')?.identifier;

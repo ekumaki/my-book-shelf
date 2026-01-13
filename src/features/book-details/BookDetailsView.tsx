@@ -17,7 +17,10 @@ const STATUS_CONFIG: Record<BookStatus, { label: string; color: string; next: Bo
     read: { label: '読了', color: 'bg-green-100 text-green-700', next: 'unread' }
 };
 
+import { useTheme } from '../../context/ThemeContext';
+
 export default function BookDetailsView() {
+    const { theme } = useTheme();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
@@ -54,15 +57,19 @@ export default function BookDetailsView() {
     const currentStatusConfig = STATUS_CONFIG[book.status];
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 pb-0 overflow-hidden">
+        <div className="h-full flex flex-col pb-0 overflow-hidden">
             {/* Header */}
-            <div className="bg-white border-b p-3 flex items-center gap-3 shadow-sm z-10 shrink-0">
-                <button onClick={() => navigate(-1)} className="text-gray-600 p-1 rounded-full hover:bg-gray-100">
+            <div className={`${theme.bgColor} backdrop-blur-md border-b ${theme.borderColor} p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors`}>
+                <button onClick={() => navigate(-1)} className={`${theme.textColor} p-1 rounded-full hover:opacity-70`}>
                     <ArrowLeft size={20} />
                 </button>
-                <h2 className="font-bold truncate flex-1">{book.title}</h2>
-                <button onClick={handleDelete} className="text-red-400 p-1 hover:text-red-600">
-                    <Trash size={20} />
+                <h2 className={`font-bold truncate flex-1 ${theme.textColor}`}>{book.title}</h2>
+                <button
+                    onClick={handleDelete}
+                    className="text-red-400 p-2 -m-1 hover:text-red-600 active:bg-gray-100 rounded-full transition-colors"
+                    aria-label="削除"
+                >
+                    <Trash size={22} />
                 </button>
             </div>
 
@@ -181,8 +188,8 @@ export default function BookDetailsView() {
             {/* FAB */}
             <button
                 onClick={() => setShowModal(true)}
-                className="fixed bottom-20 right-[calc(50%-224px+16px)] sm:right-10 bg-amber-600 hover:bg-amber-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40 md:right-[calc(50%-200px)]"
-                style={{ right: 'max(1rem, calc(50% - 208px))' }}
+                className="fixed bottom-20 bg-amber-600 hover:bg-amber-700 text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40"
+                style={{ right: 'max(1rem, calc(50% - 224px))' }}
             >
                 <Plus size={24} weight="bold" />
             </button>
