@@ -8,7 +8,10 @@ interface EnrichedMemo extends Memo {
     book?: Book;
 }
 
+import { useTheme } from '../../context/ThemeContext';
+
 export default function KnowledgeView() {
+    const { theme } = useTheme();
     const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
@@ -45,11 +48,11 @@ export default function KnowledgeView() {
         const sortedMemos = filteredMemos?.sort((a, b) => b.createdAt - a.createdAt);
 
         return (
-            <div className="h-full flex flex-col bg-gray-50 pb-20">
-                <div className="bg-white p-3 border-b flex items-center gap-2 sticky top-0 z-10 shadow-sm">
-                    <button onClick={() => setViewMode('list')} className="p-1 text-gray-600"><ArrowLeft size={20} /></button>
-                    <h2 className="font-bold text-lg text-amber-700">{selectedTag}</h2>
-                    <span className="text-xs text-gray-500 ml-auto">{sortedMemos?.length || 0}件のナレッジ</span>
+            <div className={`h-full flex flex-col pt-0 transition-colors`}>
+                <div className={`p-3 ${theme.bgColor} backdrop-blur-md shadow-md flex items-center gap-2 sticky top-0 z-10 transition-colors`}>
+                    <button onClick={() => setViewMode('list')} className={`p-1 ${theme.textColor} hover:opacity-70`}><ArrowLeft size={20} /></button>
+                    <h2 className={`font-bold text-lg ${theme.textColor}`}>{selectedTag}</h2>
+                    <span className={`text-xs ${theme.subTextColor} ml-auto`}>{sortedMemos?.length || 0}件のナレッジ</span>
                 </div>
                 <div className="p-4 space-y-4 overflow-y-auto flex-1">
                     {sortedMemos?.map((memo) => (
@@ -76,10 +79,10 @@ export default function KnowledgeView() {
     }
 
     return (
-        <div className="h-full flex flex-col bg-gray-50 pb-20">
-            <div className="p-4 bg-white shadow-sm sticky top-0 z-10 text-center border-b">
-                <h2 className="font-bold text-lg flex items-center justify-center gap-2 text-gray-700">
-                    <Hash weight="bold" className="text-gray-900" /> ナレッジタグ一覧
+        <div className="h-full flex flex-col pt-0">
+            <div className={`p-4 ${theme.bgColor} backdrop-blur-md shadow-md sticky top-0 z-10 text-center transition-colors`}>
+                <h2 className={`font-bold text-lg flex items-center justify-center gap-2 ${theme.textColor}`}>
+                    <Hash weight="bold" /> ナレッジタグ一覧
                 </h2>
             </div>
             <div className="p-4 grid grid-cols-2 gap-3 overflow-y-auto flex-1 content-start">

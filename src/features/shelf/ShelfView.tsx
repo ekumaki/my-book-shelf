@@ -174,8 +174,8 @@ export default function ShelfView() {
                         Array.from({ length: Math.ceil(books.length / 3) }, (_, i) =>
                             books.slice(i * 3, i * 3 + 3)
                         ).map((row, rowIndex) => (
-                            <div key={rowIndex} className="mb-4">
-                                <div className="flex items-end px-2">
+                            <div key={rowIndex} className="mb-4 w-full">
+                                <div className="flex items-end px-2 w-full">
                                     {row.map((book) => (
                                         <BookItem key={book.id} book={book} />
                                     ))}
