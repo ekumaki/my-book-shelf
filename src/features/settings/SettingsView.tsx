@@ -4,7 +4,7 @@ import { Gear, DownloadSimple, UploadSimple, Trash } from '@phosphor-icons/react
 import { db } from '../../db/db';
 
 export default function SettingsView() {
-    const { theme, themeId, setThemeId, availableThemes } = useTheme();
+    const { themeId, setThemeId, availableThemes } = useTheme();
 
     const handleExport = async () => {
         const books = await db.books.toArray();
@@ -48,8 +48,8 @@ export default function SettingsView() {
 
     return (
         <div className="h-full flex flex-col pt-0">
-            <div className={`p-4 ${theme.bgColor} backdrop-blur-md shadow-md sticky top-0 z-10 border-b ${theme.borderColor} transition-colors`}>
-                <h2 className={`font-bold text-lg flex items-center justify-center gap-2 ${theme.textColor}`}>
+            <div className={`p-4 bg-white border-b border-gray-200 backdrop-blur-md shadow-md sticky top-0 z-10 transition-colors`}>
+                <h2 className={`font-bold text-lg flex items-center justify-center gap-2 text-gray-900`}>
                     <Gear weight="fill" /> 設定
                 </h2>
             </div>

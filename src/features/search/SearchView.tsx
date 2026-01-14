@@ -15,10 +15,9 @@ interface GoogleBookItem {
     };
 }
 
-import { useTheme } from '../../context/ThemeContext';
+
 
 export default function SearchView() {
-    const { theme } = useTheme();
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<GoogleBookItem[]>([]);
@@ -91,14 +90,14 @@ export default function SearchView() {
 
     return (
         <div className="h-full flex flex-col pt-0">
-            <div className={`px-4 py-3 ${theme.bgColor} backdrop-blur-md shadow-md z-10 flex-shrink-0 transition-colors`}>
+            <div className={`px-4 py-3 bg-white h-16 flex items-center shadow-md z-10 flex-shrink-0 transition-colors`}>
                 <form onSubmit={searchBooks} className="flex gap-2">
                     <input
                         type="text"
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         placeholder="タイトル、著者、ISBN..."
-                        className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
+                        className="flex-1 bg-white/10 backdrop-blur-md border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
                     />
                     <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm min-w-[60px] flex justify-center items-center shadow-lg active:scale-95 transition-transform">
                         {loading ? <Spinner className="animate-spin" size={20} /> : '検索'}
