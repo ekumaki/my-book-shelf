@@ -8,10 +8,9 @@ interface EnrichedMemo extends Memo {
     book?: Book;
 }
 
-import { useTheme } from '../../context/ThemeContext';
+
 
 export default function KnowledgeView() {
-    const { theme } = useTheme();
     const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
@@ -49,10 +48,10 @@ export default function KnowledgeView() {
 
         return (
             <div className={`h-full flex flex-col pt-0 transition-colors`}>
-                <div className={`p-3 ${theme.bgColor} backdrop-blur-md shadow-md flex items-center gap-2 sticky top-0 z-10 transition-colors`}>
-                    <button onClick={() => setViewMode('list')} className={`p-1 ${theme.textColor} hover:opacity-70`}><ArrowLeft size={20} /></button>
-                    <h2 className={`font-bold text-lg ${theme.textColor}`}>{selectedTag}</h2>
-                    <span className={`text-xs ${theme.subTextColor} ml-auto`}>{sortedMemos?.length || 0}件のナレッジ</span>
+                <div className={`p-3 bg-white border-b border-gray-200 backdrop-blur-md shadow-md flex items-center gap-2 sticky top-0 z-10 transition-colors`}>
+                    <button onClick={() => setViewMode('list')} className={`p-1 text-gray-700 hover:opacity-70`}><ArrowLeft size={20} /></button>
+                    <h2 className={`font-bold text-lg text-gray-900`}>{selectedTag}</h2>
+                    <span className={`text-xs text-gray-500 ml-auto`}>{sortedMemos?.length || 0}件のナレッジ</span>
                 </div>
                 <div className="p-4 space-y-4 overflow-y-auto flex-1">
                     {sortedMemos?.map((memo) => (
@@ -80,8 +79,8 @@ export default function KnowledgeView() {
 
     return (
         <div className="h-full flex flex-col pt-0">
-            <div className={`p-4 ${theme.bgColor} backdrop-blur-md shadow-md sticky top-0 z-10 text-center transition-colors`}>
-                <h2 className={`font-bold text-lg flex items-center justify-center gap-2 ${theme.textColor}`}>
+            <div className={`p-4 bg-white border-b border-gray-200 backdrop-blur-md shadow-md sticky top-0 z-10 text-center transition-colors`}>
+                <h2 className={`font-bold text-lg flex items-center justify-center gap-2 text-gray-900`}>
                     <Hash weight="bold" /> ナレッジタグ一覧
                 </h2>
             </div>

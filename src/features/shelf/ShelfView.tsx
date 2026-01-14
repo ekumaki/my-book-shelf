@@ -44,7 +44,7 @@ export default function ShelfView() {
         }
 
         // Sort
-        collection.sort((a, b) => {
+        const sorted = collection.sort((a, b) => {
             if (sort === 'registeredAt') return b.registeredAt - a.registeredAt;
             if (sort === 'title') return a.title.localeCompare(b.title);
             if (sort === 'authors') return (a.authors[0] || '').localeCompare(b.authors[0] || '');
@@ -52,7 +52,7 @@ export default function ShelfView() {
             return 0;
         });
 
-        return collection;
+        return [...sorted]; // Return a new array reference to ensure React detects the change
     }, [sort, selectedShelfId, selectedCustomShelf]);
 
     const isPureWhite = themeId === 'pure_white';
@@ -160,7 +160,7 @@ export default function ShelfView() {
 
             {/* Book Grid */}
             <div
-                className="flex-1 overflow-y-auto pb-20 pt-4 px-0 relative"
+                className="flex-1 overflow-y-auto pb-28 pt-4 px-0 relative"
                 onClick={() => { setShowShelfDropdown(false); setShowSortMenu(false); }}
             >
                 <div className="flex flex-wrap items-end gap-y-4">
