@@ -12,7 +12,7 @@ export default function NavBar() {
     ];
 
     return (
-        <div className="bg-white border-t border-gray-200 flex justify-around items-center pb-safe pt-2 h-16 z-50 shrink-0">
+        <div className="bg-white border-t border-gray-200 flex justify-around items-center pb-safe pt-2 h-20 z-50 shrink-0">
             {navItems.map((item) => (
                 <NavLink
                     key={item.to}

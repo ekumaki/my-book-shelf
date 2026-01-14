@@ -226,7 +226,7 @@ export default function BookDetailsView() {
                     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteModal(false)}>
                         <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
                             <h3 className="font-bold text-lg text-gray-900 mb-2">本の削除</h3>
-                            <p className="text-gray-600 mb-6">この本とすべてのメモを削除してもよろしいですか？<br />この操作は取り消せません。</p>
+                            <p className="text-gray-600 mb-6">この本を削除してもよろしいですか？<br />メモの内容も削除されます。<br />この操作は取り消しできません。</p>
                             <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={() => setShowDeleteModal(false)}

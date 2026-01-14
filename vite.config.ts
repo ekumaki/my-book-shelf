@@ -13,10 +13,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'BookKnowledge',
-        short_name: 'BookKnowledge',
+        name: 'マイショコ',
+        short_name: 'マイショコ',
         description: 'Personal Book Shelf & Knowledge Base',
-        theme_color: '#5D4037',
+        theme_color: '#ffffff',
         icons: [
           {
             src: 'pwa-192x192.png',
