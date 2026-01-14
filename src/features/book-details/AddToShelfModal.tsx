@@ -36,7 +36,7 @@ export default function AddToShelfModal({ bookId, onClose }: AddToShelfModalProp
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    <h3 className="font-bold text-lg flex items-center gap-2">
+                    <h3 className="font-bold text-lg flex items-center gap-2 text-gray-900">
                         <BookmarkSimple weight="fill" className="text-amber-600" />
                         本棚に追加
                     </h3>
