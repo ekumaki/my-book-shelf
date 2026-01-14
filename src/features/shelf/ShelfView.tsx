@@ -84,7 +84,7 @@ export default function ShelfView() {
     ];
 
     return (
-        <div className="h-full flex flex-col">
+        <div className={`h-full flex flex-col ${theme.cssClass} ${theme.textColor}`}>
             {/* Simplified Header */}
             <div className={`p-3 ${theme.bgColor} ${isPureWhite ? '' : 'backdrop-blur-sm shadow-md'} flex items-center z-10 sticky top-0 transition-colors`}>
                 {/* Left: Spacer (to match right side width for centering) */}

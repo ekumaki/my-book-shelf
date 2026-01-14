@@ -17,15 +17,15 @@ const STATUS_CONFIG: Record<BookStatus, { label: string; color: string; next: Bo
     read: { label: '読了', color: 'bg-green-100 text-green-700', next: 'unread' }
 };
 
-import { useTheme } from '../../context/ThemeContext';
+// import { useTheme } from '../../context/ThemeContext';
 
 export default function BookDetailsView() {
-    const { theme } = useTheme();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [showShelfModal, setShowShelfModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const book = useLiveQuery(() => db.books.get(id!), [id]);
     const memos = useLiveQuery(() => db.memos.where('bookId').equals(id!).reverse().sortBy('createdAt'), [id]);
@@ -46,12 +46,14 @@ export default function BookDetailsView() {
         await db.books.update(book.id, { finishedDate: newDate });
     };
 
-    const handleDelete = async () => {
-        if (confirm('この本とすべてのメモを削除しますか？')) {
-            await db.books.delete(book.id);
-            await db.memos.where('bookId').equals(book.id).delete();
-            navigate('/');
-        }
+    const handleDeleteClick = () => {
+        setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        await db.books.delete(book.id);
+        await db.memos.where('bookId').equals(book.id).delete();
+        navigate('/');
     };
 
     const currentStatusConfig = STATUS_CONFIG[book.status];
@@ -59,13 +61,13 @@ export default function BookDetailsView() {
     return (
         <div className="h-full flex flex-col pb-0 overflow-hidden">
             {/* Header */}
-            <div className={`${theme.bgColor} backdrop-blur-md border-b ${theme.borderColor} p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors`}>
-                <button onClick={() => navigate(-1)} className={`${theme.textColor} p-1 rounded-full hover:opacity-70`}>
+            <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors">
+                <button onClick={() => navigate(-1)} className="text-gray-700 p-1 rounded-full hover:opacity-70">
                     <ArrowLeft size={20} />
                 </button>
-                <h2 className={`font-bold truncate flex-1 ${theme.textColor}`}>{book.title}</h2>
+                <h2 className="font-bold truncate flex-1 text-gray-900">{book.title}</h2>
                 <button
-                    onClick={handleDelete}
+                    onClick={handleDeleteClick}
                     className="text-red-400 p-2 -m-1 hover:text-red-600 active:bg-gray-100 rounded-full transition-colors"
                     aria-label="削除"
                 >
@@ -76,13 +78,16 @@ export default function BookDetailsView() {
             <div className="flex-1 overflow-y-auto pb-24">
                 {/* Book Info Header */}
                 <div className="bg-white p-4 mb-4 shadow-sm flex gap-4">
-                    <div className="w-24 flex-shrink-0 cursor-zoom-in group relative" onClick={() => setShowImageModal(true)}>
-                        {book.thumbnail ? (
-                            <img src={book.thumbnail} className="w-full h-auto shadow-md rounded-sm" />
-                        ) : (
-                            <div className="w-full h-32 bg-gray-200 flex items-center justify-center text-xs">No Image</div>
-                        )}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                    <div className="w-24 flex-shrink-0 flex flex-col gap-1">
+                        <div className="w-full cursor-zoom-in group relative" onClick={() => setShowImageModal(true)}>
+                            {book.thumbnail ? (
+                                <img src={book.thumbnail} className="w-full h-auto shadow-md rounded-sm" />
+                            ) : (
+                                <div className="w-full h-32 bg-gray-200 flex items-center justify-center text-xs">No Image</div>
+                            )}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                        </div>
+                        <div className="text-[10px] text-gray-400 text-center">(クリックで拡大)</div>
                     </div>
                     <div className="flex-1 py-1">
                         <p className="text-sm text-gray-500 mb-2">{book.authors.join(', ')}</p>
@@ -194,21 +199,52 @@ export default function BookDetailsView() {
                 <Plus size={24} weight="bold" />
             </button>
 
-            {showModal && (
-                <MemoModal
-                    bookId={book.id}
-                    onClose={() => setShowModal(false)}
-                    onSaved={() => setShowModal(false)}
-                />
-            )}
+            {
+                showModal && (
+                    <MemoModal
+                        bookId={book.id}
+                        onClose={() => setShowModal(false)}
+                        onSaved={() => setShowModal(false)}
+                    />
+                )
+            }
 
-            {showImageModal && book.thumbnail && (
-                <ImageModal src={book.thumbnail} onClose={() => setShowImageModal(false)} />
-            )}
+            {
+                showImageModal && book.thumbnail && (
+                    <ImageModal src={book.thumbnail} onClose={() => setShowImageModal(false)} />
+                )
+            }
 
-            {showShelfModal && (
-                <AddToShelfModal bookId={book.id} onClose={() => setShowShelfModal(false)} />
-            )}
-        </div>
+            {
+                showShelfModal && (
+                    <AddToShelfModal bookId={book.id} onClose={() => setShowShelfModal(false)} />
+                )
+            }
+
+            {
+                showDeleteModal && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowDeleteModal(false)}>
+                        <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
+                            <h3 className="font-bold text-lg text-gray-900 mb-2">本の削除</h3>
+                            <p className="text-gray-600 mb-6">この本とすべてのメモを削除してもよろしいですか？<br />この操作は取り消せません。</p>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded"
+                                >
+                                    キャンセル
+                                </button>
+                                <button
+                                    onClick={handleDeleteConfirm}
+                                    className="px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-600"
+                                >
+                                    削除する
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }
