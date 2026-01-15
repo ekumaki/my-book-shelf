@@ -91,7 +91,7 @@ export default function SearchView() {
     return (
         <div className="h-full flex flex-col pt-0">
             <div className={`px-4 py-3 bg-white h-16 flex items-center shadow-md z-10 flex-shrink-0 transition-colors`}>
-                <form onSubmit={searchBooks} className="flex gap-2">
+                <form onSubmit={searchBooks} className="flex gap-2 w-full">
                     <input
                         type="text"
                         value={query}
