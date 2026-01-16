@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
-import type { Theme, ThemeId } from '../types';
+import type { Theme, ThemeId, CoverBackground, CoverBackgroundId } from '../types';
 
 
 const THEMES: Record<ThemeId, Theme> = {
@@ -33,11 +33,38 @@ const THEMES: Record<ThemeId, Theme> = {
     }
 };
 
+const COVER_BACKGROUNDS: Record<CoverBackgroundId, CoverBackground> = {
+    'wooden_stand': {
+        id: 'wooden_stand',
+        label: '木製スタンド風',
+        cssClass: 'cover-bg-wooden-stand'
+    },
+    'cafe': {
+        id: 'cafe',
+        label: 'カフェ背景',
+        cssClass: 'cover-bg-cafe'
+    },
+    'gradient': {
+        id: 'gradient',
+        label: 'グラデーション',
+        cssClass: 'cover-bg-gradient'
+    },
+    'white': {
+        id: 'white',
+        label: '白背景',
+        cssClass: 'cover-bg-white'
+    }
+};
+
 interface ThemeContextType {
     themeId: ThemeId;
     theme: Theme;
     setThemeId: (id: ThemeId) => void;
     availableThemes: Theme[];
+    coverBackgroundId: CoverBackgroundId;
+    coverBackground: CoverBackground;
+    setCoverBackgroundId: (id: CoverBackgroundId) => void;
+    availableCoverBackgrounds: CoverBackground[];
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -47,16 +74,36 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         return (localStorage.getItem('bk_theme') as ThemeId) || 'dark_wood';
     });
 
+    const [coverBackgroundId, setCoverBackgroundIdState] = useState<CoverBackgroundId>(() => {
+        return (localStorage.getItem('bk_cover_bg') as CoverBackgroundId) || 'wooden_stand';
+    });
+
     const setThemeId = (id: ThemeId) => {
         setThemeIdState(id);
         localStorage.setItem('bk_theme', id);
     };
 
+    const setCoverBackgroundId = (id: CoverBackgroundId) => {
+        setCoverBackgroundIdState(id);
+        localStorage.setItem('bk_cover_bg', id);
+    };
+
     const theme = THEMES[themeId];
     const availableThemes = Object.values(THEMES);
+    const coverBackground = COVER_BACKGROUNDS[coverBackgroundId];
+    const availableCoverBackgrounds = Object.values(COVER_BACKGROUNDS);
 
     return (
-        <ThemeContext.Provider value={{ themeId, theme, setThemeId, availableThemes }}>
+        <ThemeContext.Provider value={{
+            themeId,
+            theme,
+            setThemeId,
+            availableThemes,
+            coverBackgroundId,
+            coverBackground,
+            setCoverBackgroundId,
+            availableCoverBackgrounds
+        }}>
             {children}
         </ThemeContext.Provider>
     );
