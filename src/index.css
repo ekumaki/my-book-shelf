@@ -142,3 +142,78 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(85, 85, 85, 0.8);
 }
+
+/* --- Cover Preview Backgrounds --- */
+
+/* 1. Wooden Stand (木製スタンド風) - Default */
+.cover-bg-wooden-stand {
+  background-color: #a88b5e;
+  background-image: url('/my-book-shelf/bg/wooden_stand.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.cover-bg-wooden-stand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+}
+
+/* 2. Cafe Background (カフェ風) */
+.cover-bg-cafe {
+  background: linear-gradient(135deg,
+      #3d2314 0%,
+      #5c3a21 30%,
+      #4a2c17 60%,
+      #2d1810 100%);
+  position: relative;
+}
+
+.cover-bg-cafe::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(101, 67, 33, 0.6) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(139, 90, 43, 0.3) 0%, transparent 30%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* 3. Gradient (グラデーション) */
+.cover-bg-gradient {
+  background: linear-gradient(135deg,
+      #667eea 0%,
+      #764ba2 50%,
+      #f093fb 100%);
+  position: relative;
+}
+
+.cover-bg-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+/* 4. White Background (白背景) */
+.cover-bg-white {
+  background: linear-gradient(135deg,
+      #ffffff 0%,
+      #f5f5f5 50%,
+      #eeeeee 100%);
+  position: relative;
+}
+
+.cover-bg-white::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
+  pointer-events: none;
+}

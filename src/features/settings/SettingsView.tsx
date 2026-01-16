@@ -4,7 +4,7 @@ import { Gear, DownloadSimple, UploadSimple, Trash } from '@phosphor-icons/react
 import { db } from '../../db/db';
 
 export default function SettingsView() {
-    const { themeId, setThemeId, availableThemes } = useTheme();
+    const { themeId, setThemeId, availableThemes, coverBackgroundId, setCoverBackgroundId, availableCoverBackgrounds } = useTheme();
 
     const handleExport = async () => {
         const books = await db.books.toArray();
@@ -70,6 +70,27 @@ export default function SettingsView() {
                                     className="text-amber-600 focus:ring-amber-500"
                                 />
                                 <span className="text-sm font-bold text-gray-700">{t.label}</span>
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Cover Background Settings */}
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h3 className="font-bold text-gray-700 mb-3">表紙プレビューの背景</h3>
+                    <p className="text-xs text-gray-500 mb-3">本の画像をタップした時に表示される背景を選択します</p>
+                    <div className="space-y-2">
+                        {availableCoverBackgrounds.map(bg => (
+                            <label key={bg.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${coverBackgroundId === bg.id ? 'border-amber-500 bg-amber-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                <input
+                                    type="radio"
+                                    name="coverBackground"
+                                    value={bg.id}
+                                    checked={coverBackgroundId === bg.id}
+                                    onChange={() => setCoverBackgroundId(bg.id)}
+                                    className="text-amber-600 focus:ring-amber-500"
+                                />
+                                <span className="text-sm font-bold text-gray-700">{bg.label}</span>
                             </label>
                         ))}
                     </div>

@@ -40,3 +40,11 @@ export interface Theme {
     borderColor: string;
     bgColor: string;
 }
+
+export type CoverBackgroundId = 'wooden_stand' | 'cafe' | 'gradient' | 'white';
+
+export interface CoverBackground {
+    id: CoverBackgroundId;
+    label: string;
+    cssClass: string;
+}
