@@ -1,5 +1,6 @@
 import { X } from '@phosphor-icons/react';
 import { useTheme } from '../../context/ThemeContext';
+import { useMemo } from 'react';
 
 interface ImageModalProps {
     src: string;
@@ -8,6 +9,12 @@ interface ImageModalProps {
 
 export default function ImageModal({ src, onClose }: ImageModalProps) {
     const { coverBackground } = useTheme();
+
+    // Remove Rakuten's size parameters (?_ex=...) to get the original high-quality image
+    const highQualitySrc = useMemo(() => {
+        if (!src) return '';
+        return src.split('?')[0];
+    }, [src]);
 
     return (
         <div
@@ -43,7 +50,7 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
 
                     {/* Book Image */}
                     <img
-                        src={src}
+                        src={highQualitySrc}
                         className="max-w-[85vw] max-h-[70vh] object-contain rounded-sm relative z-10"
                         style={{
                             boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 2px 0 5px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.2)'
