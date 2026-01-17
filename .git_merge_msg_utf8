@@ -1,0 +1,5 @@
+Merge remote-tracking branch 'origin/develop' into feature/add-rakuten-api
+
+Conflicts:
+	src/features/book-details/ImageModal.tsx
+    (Resolved by keeping the mobile-optimized viewport units and onError handler)
