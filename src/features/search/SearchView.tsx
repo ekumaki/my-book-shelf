@@ -26,6 +26,10 @@ export default function SearchView() {
 
     const searchBooks = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
+
+        // Hide keyboard on mobile
+        (document.activeElement as HTMLElement)?.blur();
+
         if (!query) return;
         setLoading(true);
         // Reset scroll so results are shown from the top on every search
@@ -83,7 +87,8 @@ export default function SearchView() {
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         placeholder="タイトル、著者、ISBN..."
-                        className="flex-1 bg-white/10 backdrop-blur-md border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
+                        enterKeyHint="search"
+                        className="flex-1 bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
                     />
                     <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm min-w-[60px] flex justify-center items-center shadow-lg active:scale-95 transition-transform">
                         {loading ? <Spinner className="animate-spin" size={20} /> : '検索'}

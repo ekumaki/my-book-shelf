@@ -25,8 +25,8 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                width: '100vw',
-                height: '100vh',
+                width: '100dvw',
+                height: '100dvh',
                 zIndex: 99999,
             }}
             onClick={onClose}
@@ -51,6 +51,12 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
                     {/* Book Image */}
                     <img
                         src={highQualitySrc}
+                        onError={(e) => {
+                            // Fallback to original src if high quality version fails
+                            if (e.currentTarget.src !== src) {
+                                e.currentTarget.src = src;
+                            }
+                        }}
                         className="max-w-[85vw] max-h-[70vh] object-contain rounded-sm relative z-10"
                         style={{
                             boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 2px 0 5px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.2)'
