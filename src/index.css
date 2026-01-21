@@ -155,14 +155,6 @@
   position: relative;
 }
 
-.cover-bg-wooden-stand::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.4) 100%);
-  pointer-events: none;
-}
-
 /* 2. Cafe Background (カフェ風) */
 .cover-bg-cafe {
   background: linear-gradient(135deg,

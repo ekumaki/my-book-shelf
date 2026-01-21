@@ -18,7 +18,7 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
 
     return (
         <div
-            className={`flex flex-col items-center justify-center p-4 ${coverBackground.cssClass}`}
+            className="flex flex-col items-center justify-center bg-black"
             style={{
                 position: 'fixed',
                 top: 0,
@@ -38,15 +38,18 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
                 <X size={32} />
             </button>
 
-            {/* Book cover area */}
-            <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
-                {/* Book cover container */}
-                <div
-                    className="relative transition-transform duration-300 pointer-events-auto"
-                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                >
+            {/* Preview Container with fixed Aspect Ratio (3:4, equivalent to 900x1200) */}
+            <div
+                className={`relative w-full aspect-[3/4] flex items-center justify-center shadow-2xl transition-transform duration-300 pointer-events-none ${coverBackground.cssClass}`}
+                style={{
+                    maxWidth: 'min(100vw, 900px, calc(100vh * 0.75))',
+                }}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
+                {/* Internal container to catch clicks and manage content */}
+                <div className="relative w-full h-full flex items-center justify-center pointer-events-auto">
                     {/* Shadow for realism */}
-                    <div className="absolute -bottom-4 left-[5%] w-[90%] h-8 bg-black/40 blur-xl rounded-[100%]"></div>
+                    <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 w-[63%] h-8 bg-black/60 blur-2xl rounded-[100%]"></div>
 
                     {/* Book Image */}
                     <img
@@ -57,7 +60,7 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
                                 e.currentTarget.src = src;
                             }
                         }}
-                        className="max-w-[85vw] max-h-[70vh] object-contain rounded-sm relative z-10"
+                        className="max-w-[67%] max-h-[76%] object-contain rounded-sm relative z-10"
                         style={{
                             boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 2px 0 5px rgba(255, 255, 255, 0.2), inset -2px 0 5px rgba(0, 0, 0, 0.2)'
                         }}
