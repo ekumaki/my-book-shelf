@@ -41,7 +41,7 @@ export interface Theme {
     bgColor: string;
 }
 
-export type CoverBackgroundId = 'wooden_stand' | 'cafe' | 'gradient' | 'white';
+export type CoverBackgroundId = 'wooden_stand' | 'gradient' | 'white';
 
 export interface CoverBackground {
     id: CoverBackgroundId;
