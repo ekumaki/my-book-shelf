@@ -1,10 +1,12 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { Gear, DownloadSimple, UploadSimple, Trash } from '@phosphor-icons/react';
+import { Gear, DownloadSimple, UploadSimple, Trash, CaretDown, CaretUp } from '@phosphor-icons/react';
 import { db } from '../../db/db';
 
 export default function SettingsView() {
-    const { themeId, setThemeId, availableThemes, coverBackgroundId, setCoverBackgroundId, availableCoverBackgrounds } = useTheme();
+    const { themeId, theme, setThemeId, availableThemes, coverBackgroundId, coverBackground, setCoverBackgroundId, availableCoverBackgrounds } = useTheme();
+    const [isThemeOpen, setIsThemeOpen] = React.useState(false);
+    const [isCoverBgOpen, setIsCoverBgOpen] = React.useState(false);
 
     const handleExport = async () => {
         const books = await db.books.toArray();
@@ -14,7 +16,7 @@ export default function SettingsView() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `book_knowledge_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `myshoco_backup_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
     };
 
@@ -57,43 +59,74 @@ export default function SettingsView() {
 
                 {/* Theme Settings */}
                 <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h3 className="font-bold text-gray-700 mb-3">本棚の背景テーマ</h3>
-                    <div className="space-y-2">
-                        {availableThemes.map(t => (
-                            <label key={t.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${themeId === t.id ? 'border-amber-500 bg-amber-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                <input
-                                    type="radio"
-                                    name="theme"
-                                    value={t.id}
-                                    checked={themeId === t.id}
-                                    onChange={() => setThemeId(t.id)}
-                                    className="text-amber-600 focus:ring-amber-500"
-                                />
-                                <span className="text-sm font-bold text-gray-700">{t.label}</span>
-                            </label>
-                        ))}
-                    </div>
+                    <button
+                        onClick={() => setIsThemeOpen(!isThemeOpen)}
+                        className="w-full flex items-center justify-between text-left"
+                    >
+                        <div>
+                            <h3 className="font-bold text-gray-700">本棚の背景テーマ</h3>
+                            {!isThemeOpen && <p className="text-sm text-amber-600 font-medium mt-1">現在: {theme.label}</p>}
+                        </div>
+                        <div className="text-gray-400">
+                            {isThemeOpen ? <CaretUp size={16} weight="bold" /> : <CaretDown size={16} weight="bold" />}
+                        </div>
+                    </button>
+
+                    {isThemeOpen && (
+                        <div className="mt-3 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                            {availableThemes.map(t => (
+                                <label key={t.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${themeId === t.id ? 'border-amber-500 bg-amber-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="theme"
+                                        value={t.id}
+                                        checked={themeId === t.id}
+                                        onChange={() => setThemeId(t.id)}
+                                        className="text-amber-600 focus:ring-amber-500"
+                                    />
+                                    <span className="text-sm font-bold text-gray-700">{t.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Cover Background Settings */}
                 <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h3 className="font-bold text-gray-700 mb-3">表紙プレビューの背景</h3>
-                    <p className="text-xs text-gray-500 mb-3">本の画像をタップした時に表示される背景を選択します</p>
-                    <div className="space-y-2">
-                        {availableCoverBackgrounds.map(bg => (
-                            <label key={bg.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${coverBackgroundId === bg.id ? 'border-amber-500 bg-amber-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                <input
-                                    type="radio"
-                                    name="coverBackground"
-                                    value={bg.id}
-                                    checked={coverBackgroundId === bg.id}
-                                    onChange={() => setCoverBackgroundId(bg.id)}
-                                    className="text-amber-600 focus:ring-amber-500"
-                                />
-                                <span className="text-sm font-bold text-gray-700">{bg.label}</span>
-                            </label>
-                        ))}
-                    </div>
+                    <button
+                        onClick={() => setIsCoverBgOpen(!isCoverBgOpen)}
+                        className="w-full flex items-center justify-between text-left"
+                    >
+                        <div>
+                            <h3 className="font-bold text-gray-700">表紙プレビューの背景</h3>
+                            {isCoverBgOpen ? (
+                                <p className="text-xs text-gray-500 mt-1">本の画像をタップした時に表示される背景を選択します</p>
+                            ) : (
+                                <p className="text-sm text-amber-600 font-medium mt-1">現在: {coverBackground.label}</p>
+                            )}
+                        </div>
+                        <div className="text-gray-400 pl-2">
+                            {isCoverBgOpen ? <CaretUp size={16} weight="bold" /> : <CaretDown size={16} weight="bold" />}
+                        </div>
+                    </button>
+
+                    {isCoverBgOpen && (
+                        <div className="mt-3 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                            {availableCoverBackgrounds.map(bg => (
+                                <label key={bg.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${coverBackgroundId === bg.id ? 'border-amber-500 bg-amber-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="coverBackground"
+                                        value={bg.id}
+                                        checked={coverBackgroundId === bg.id}
+                                        onChange={() => setCoverBackgroundId(bg.id)}
+                                        className="text-amber-600 focus:ring-amber-500"
+                                    />
+                                    <span className="text-sm font-bold text-gray-700">{bg.label}</span>
+                                </label>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -120,7 +153,7 @@ export default function SettingsView() {
                 </div>
 
                 <div className="text-center text-xs text-gray-400 mt-8">
-                    BookKnowledge v1.0<br />
+                    MyShoco v1.0<br />
                     Data is stored locally in your browser.
                 </div>
             </div>

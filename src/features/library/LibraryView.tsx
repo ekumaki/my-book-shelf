@@ -30,10 +30,10 @@ const initialFormState: ShelfFormState = {
     selectedBookIds: new Set()
 };
 
-import { useTheme } from '../../context/ThemeContext';
+
 
 export default function LibraryView() {
-    const { theme } = useTheme();
+
     const navigate = useNavigate();
     const location = useLocation();
     const [mode, setMode] = useState<Mode>('list');
@@ -167,10 +167,10 @@ export default function LibraryView() {
         return (
             <div className="h-full flex flex-col">
                 {/* Header */}
-                <div className={`${theme.bgColor} backdrop-blur-md border-b ${theme.borderColor} p-4 shadow-md z-10 shrink-0 transition-colors`}>
+                <div className="bg-white backdrop-blur-md border-b border-gray-200 p-4 shadow-md z-10 shrink-0 transition-colors">
                     <div className="flex items-center justify-center gap-2">
-                        <Bank size={24} className={theme.textColor} weight="fill" />
-                        <h1 className={`text-xl font-bold ${theme.textColor}`}>ライブラリ</h1>
+                        <Bank size={24} className="text-gray-900" weight="fill" />
+                        <h1 className="text-xl font-bold text-gray-900">ライブラリ</h1>
                     </div>
                 </div>
 
@@ -240,11 +240,11 @@ export default function LibraryView() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className={`${theme.bgColor} backdrop-blur-md border-b ${theme.borderColor} p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors`}>
-                <button onClick={handleCancel} className={`${theme.textColor} p-1 rounded-full hover:opacity-70`}>
+            <div className="bg-white backdrop-blur-md border-b border-gray-200 p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors">
+                <button onClick={handleCancel} className="text-gray-900 p-1 rounded-full hover:opacity-70">
                     <X size={20} />
                 </button>
-                <h2 className={`font-bold flex-1 ${theme.textColor}`}>
+                <h2 className="font-bold flex-1 text-gray-900">
                     {isSmartShelf ? '本棚を確認' : (formState.id ? '本棚を編集' : '新しい本棚')}
                 </h2>
                 {!isSmartShelf && (
