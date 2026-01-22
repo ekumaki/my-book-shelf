@@ -113,6 +113,16 @@
   display: none;
 }
 
+/* 4. Pitch Black */
+.theme-pitch-black {
+  background-color: #000000;
+  background-image: none;
+}
+
+.theme-pitch-black .shelf-board {
+  display: none;
+}
+
 
 /* Book Spine Effects */
 .book-spine {
@@ -208,4 +218,10 @@
   inset: 0;
   background: radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
   pointer-events: none;
+}
+
+/* 5. Pitch Black (真っ黒) */
+.cover-bg-pitch-black {
+  background-color: #000000;
+  position: relative;
 }
