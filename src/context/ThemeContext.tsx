@@ -30,6 +30,15 @@ const THEMES: Record<ThemeId, Theme> = {
         subTextColor: 'text-gray-600',
         borderColor: 'border-gray-300',
         bgColor: 'bg-white'
+    },
+    'pitch_black': {
+        id: 'pitch_black',
+        label: '真っ黒',
+        cssClass: 'theme-pitch-black',
+        textColor: 'text-gray-200',
+        subTextColor: 'text-gray-400',
+        borderColor: 'border-gray-800',
+        bgColor: 'bg-black'
     }
 };
 
@@ -48,6 +57,11 @@ const COVER_BACKGROUNDS: Record<CoverBackgroundId, CoverBackground> = {
         id: 'white',
         label: '真っ白',
         cssClass: 'cover-bg-white'
+    },
+    'pitch_black': {
+        id: 'pitch_black',
+        label: '真っ黒',
+        cssClass: 'cover-bg-pitch-black'
     }
 };
 
