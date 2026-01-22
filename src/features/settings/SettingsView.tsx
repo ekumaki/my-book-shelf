@@ -11,7 +11,8 @@ export default function SettingsView() {
     const handleExport = async () => {
         const books = await db.books.toArray();
         const memos = await db.memos.toArray();
-        const data = { books, memos, version: 1, exportedAt: new Date().toISOString() };
+        const shelves = await db.shelves.toArray();
+        const data = { books, memos, shelves, version: 1, exportedAt: new Date().toISOString() };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -32,6 +33,7 @@ export default function SettingsView() {
                 const data = JSON.parse(event.target.result);
                 if (data.books) await db.books.bulkPut(data.books);
                 if (data.memos) await db.memos.bulkPut(data.memos);
+                if (data.shelves) await db.shelves.bulkPut(data.shelves);
                 alert('インポートが完了しました');
             } catch (err) {
                 alert('ファイル形式が正しくありません');
