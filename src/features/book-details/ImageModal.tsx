@@ -18,7 +18,6 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
     const imageContainerRef = useRef<HTMLDivElement>(null);
     const dragStartPos = useRef({ x: 0, y: 0 });
     const initialOffset = useRef({ x: 0, y: 0 });
-    const constraints = useRef({ minX: 0, maxX: 0, minY: 0, maxY: 0 });
 
     // Remove Rakuten's size parameters (?_ex=...) to get the original high-quality image
     const highQualitySrc = useMemo(() => {
@@ -32,20 +31,7 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
         e.preventDefault();
         e.stopPropagation();
 
-        const element = imageContainerRef.current;
-        const rect = element.getBoundingClientRect();
 
-        // Calculate constraints ensuring the element stays within the viewport.
-        // Since the element is centered by default, the limit in each direction is (viewport_dim - element_dim) / 2.
-        const xLimit = Math.max(0, (window.innerWidth - rect.width) / 2);
-        const yLimit = Math.max(0, (window.innerHeight - rect.height) / 2);
-
-        constraints.current = {
-            minX: -xLimit,
-            maxX: xLimit,
-            minY: -yLimit,
-            maxY: yLimit
-        };
 
         setIsDragging(true);
         dragStartPos.current = { x: e.clientX, y: e.clientY };
@@ -64,10 +50,6 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
 
         let newX = initialOffset.current.x + dx;
         let newY = initialOffset.current.y + dy;
-
-        // Clamp values to keep inside screen
-        newX = Math.max(constraints.current.minX, Math.min(newX, constraints.current.maxX));
-        newY = Math.max(constraints.current.minY, Math.min(newY, constraints.current.maxY));
 
         setOffset({ x: newX, y: newY });
     };
@@ -92,6 +74,13 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
             }}
             onClick={onClose}
         >
+            {/* Alignment Guides */}
+            {isDragging && (
+                <>
+                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 border-l-2 border-dotted border-white/50 pointer-events-none z-50"></div>
+                    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t-2 border-dotted border-white/50 pointer-events-none z-50"></div>
+                </>
+            )}
             <button
                 onClick={onClose}
                 className="absolute top-8 right-6 text-white/80 hover:text-white p-3 bg-black/40 rounded-full backdrop-blur-sm transition-colors z-50 shadow-lg"
@@ -104,8 +93,8 @@ export default function ImageModal({ src, onClose }: ImageModalProps) {
                 className={`relative w-full aspect-[3/4] flex items-center justify-center shadow-2xl transition-transform duration-300 ${coverBackground.cssClass}`}
                 style={{
                     // Limit size to ensuring some margin maintains drag-ability
-                    // Using 95% effectively gives space to move.
-                    width: 'min(95vw, calc(95vh * 0.75))',
+                    // Using 100% on mobile to remove side margins, constrained by height on larger screens.
+                    width: 'min(100vw, calc(95vh * 0.75))',
                     maxWidth: '900px',
                 }}
                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
