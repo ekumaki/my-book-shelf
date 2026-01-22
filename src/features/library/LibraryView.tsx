@@ -323,7 +323,10 @@ export default function LibraryView() {
                         </div>
                         <select
                             value={statusFilter}
-                            onChange={e => setStatusFilter(e.target.value)}
+                            onChange={e => {
+                                setStatusFilter(e.target.value);
+                                setDateFilter('');
+                            }}
                             className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
                         >
                             <option value="all">すべて</option>
@@ -333,12 +336,23 @@ export default function LibraryView() {
                             <option value="read">読了</option>
                         </select>
                         {statusFilter === 'read' && (
-                            <input
-                                type="month"
-                                value={dateFilter}
-                                onChange={e => setDateFilter(e.target.value)}
-                                className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
-                            />
+                            <div className="relative flex items-center">
+                                <input
+                                    type="month"
+                                    value={dateFilter}
+                                    onChange={e => setDateFilter(e.target.value)}
+                                    className="border border-gray-200 rounded-lg pl-2 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
+                                />
+                                {dateFilter && (
+                                    <button
+                                        onClick={() => setDateFilter('')}
+                                        className="absolute right-2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100"
+                                        title="リセット"
+                                    >
+                                        <X size={14} weight="bold" />
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
 
