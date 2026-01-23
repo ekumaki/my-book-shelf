@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../db/db';
-import { Spinner, CheckCircle, Plus, ArrowSquareOut } from '@phosphor-icons/react';
+import { Spinner, CheckCircle, Plus, ArrowSquareOut, X } from '@phosphor-icons/react';
+
 import type { Book } from '../../types';
 import { searchBooks as searchRakutenBooks, type RakutenBookItem } from '../../services/rakutenBooksApi';
 import { BarcodeIcon } from '../../components/BarcodeIcon';
@@ -89,7 +90,9 @@ export default function SearchView() {
         const newBook: Book = {
             id: crypto.randomUUID(),
             title: item.title,
+            titleKana: item.titleKana || undefined,
             authors: authors,
+            authorsKana: item.authorKana ? item.authorKana.split('/').map(a => a.trim()) : undefined,
             thumbnail: thumbnail,
             isbn: isbn,
             status: 'unread',
@@ -109,14 +112,26 @@ export default function SearchView() {
         <div className="h-full flex flex-col pt-0">
             <div className={`px-4 py-3 bg-white h-16 flex items-center shadow-md z-10 flex-shrink-0 transition-colors`}>
                 <form onSubmit={searchBooks} className="flex gap-2 w-full">
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={e => setQuery(e.target.value)}
-                        placeholder="タイトル、著者、ISBN..."
-                        enterKeyHint="search"
-                        className="flex-1 bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
-                    />
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={e => setQuery(e.target.value)}
+                            placeholder="タイトル、著者、ISBN..."
+                            enterKeyHint="search"
+                            className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-4 pr-10 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder:text-gray-400"
+                        />
+                        {query && (
+                            <button
+                                type="button"
+                                onClick={() => setQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-full p-0.5"
+                            >
+                                <X size={16} weight="bold" />
+                            </button>
+                        )}
+                    </div>
+
                     <button type="submit" disabled={loading} className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-sm min-w-[60px] flex justify-center items-center shadow-lg active:scale-95 transition-transform">
                         {loading ? <Spinner className="animate-spin" size={20} /> : '検索'}
                     </button>

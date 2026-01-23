@@ -46,8 +46,16 @@ export default function ShelfView() {
         // Sort
         const sorted = collection.sort((a, b) => {
             if (sort === 'registeredAt') return b.registeredAt - a.registeredAt;
-            if (sort === 'title') return a.title.localeCompare(b.title);
-            if (sort === 'authors') return (a.authors[0] || '').localeCompare(b.authors[0] || '');
+            if (sort === 'title') {
+                const aKey = a.titleKana || a.title;
+                const bKey = b.titleKana || b.title;
+                return aKey.localeCompare(bKey, 'ja');
+            }
+            if (sort === 'authors') {
+                const aKey = a.authorsKana?.[0] || a.authors[0] || '';
+                const bKey = b.authorsKana?.[0] || b.authors[0] || '';
+                return aKey.localeCompare(bKey, 'ja');
+            }
             if (sort === 'finishedDate') return (b.finishedDate || '').localeCompare(a.finishedDate || '');
             return 0;
         });
