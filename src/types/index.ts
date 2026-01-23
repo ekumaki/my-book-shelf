@@ -4,7 +4,9 @@ export interface Book {
     id: string; // UUID
     isbn: string;
     title: string;
+    titleKana?: string;
     authors: string[];
+    authorsKana?: string[];
     thumbnail?: string;
     status: BookStatus;
     registeredAt: number; // Unix Timestamp

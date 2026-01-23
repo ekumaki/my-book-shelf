@@ -223,8 +223,18 @@ export default function ShelfManagerView() {
                                 value={bookFilter}
                                 onChange={e => setBookFilter(e.target.value)}
                                 placeholder="タイトル・著者で検索..."
-                                className="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                className="w-full border rounded-lg pl-9 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                             />
+                            {bookFilter && (
+                                <button
+                                    type="button"
+                                    onClick={() => setBookFilter('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 rounded-full p-0.5"
+                                >
+                                    <X size={14} weight="bold" />
+                                </button>
+                            )}
+
                         </div>
                         <select
                             value={statusFilter}
