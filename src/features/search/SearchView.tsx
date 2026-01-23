@@ -4,14 +4,19 @@ import { db } from '../../db/db';
 import { Spinner, CheckCircle, Plus, ArrowSquareOut } from '@phosphor-icons/react';
 import type { Book } from '../../types';
 import { searchBooks as searchRakutenBooks, type RakutenBookItem } from '../../services/rakutenBooksApi';
+import { BarcodeIcon } from '../../components/BarcodeIcon';
+import { BarcodeScannerModal } from './BarcodeScannerModal';
 
 export default function SearchView() {
+
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<RakutenBookItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [registeredBooks, setRegisteredBooks] = useState<Map<string, string>>(new Map());
+    const [showScanner, setShowScanner] = useState(false);
     const resultsContainerRef = useRef<HTMLDivElement | null>(null);
+
 
     // Load existing ISBNs to check duplicates
     useEffect(() => {
@@ -44,6 +49,25 @@ export default function SearchView() {
             setLoading(false);
         }
     };
+
+    const handleBarcodeDetected = async (isbn: string) => {
+        setShowScanner(false);
+        setQuery(isbn);
+        setLoading(true);
+        try {
+            const items = await searchRakutenBooks(isbn);
+            setResults(items);
+            if (items.length === 0) {
+                alert(`ISBN: ${isbn} に該当する本が見つかりませんでした。`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('検索に失敗しました');
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         // Also reset when results change (e.g., hot reload / async updates)
@@ -97,7 +121,25 @@ export default function SearchView() {
             </div>
 
             <div ref={resultsContainerRef} className="flex-1 overflow-y-auto p-4 pb-20 min-h-0 overscroll-contain">
+
+                {/* Barcode Scanner Button (Show when no results) */}
+                {results.length === 0 && !loading && (
+                    <div className="flex flex-col items-center justify-center py-12 gap-4 text-gray-500">
+                        <button
+                            onClick={() => setShowScanner(true)}
+                            className="flex flex-col items-center gap-3 p-6 rounded-xl bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all text-gray-600 border-2 border-dashed border-gray-300"
+                        >
+                            <div className="p-4 bg-white rounded-full shadow-sm">
+                                <BarcodeIcon size={48} className="text-gray-700" />
+                            </div>
+                            <span className="font-bold text-lg">バーコードで読み取り</span>
+                        </button>
+                        <p className="text-sm">本のバーコード(ISBN)を読み取って検索</p>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-4">
+
                     {results.map((item, index) => {
                         // Use isbn as the key if available, otherwise fallback to an index-based key.
                         // While ISBN is unique for books, search results usually have ISBNs. 
@@ -143,6 +185,16 @@ export default function SearchView() {
                     })}
                 </div>
             </div>
+
+            {showScanner && (
+                <BarcodeScannerModal
+                    onDetected={handleBarcodeDetected}
+                    onClose={() => setShowScanner(false)}
+                />
+            )}
         </div>
+
+
+
     );
 }
