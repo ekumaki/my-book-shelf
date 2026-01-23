@@ -6,16 +6,19 @@ import type { Book } from '../../types';
 import { searchBooks as searchRakutenBooks, type RakutenBookItem } from '../../services/rakutenBooksApi';
 import { BarcodeIcon } from '../../components/BarcodeIcon';
 import { BarcodeScannerModal } from './BarcodeScannerModal';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function SearchView() {
+
 
     const navigate = useNavigate();
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<RakutenBookItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [registeredBooks, setRegisteredBooks] = useState<Map<string, string>>(new Map());
-    const [showScanner, setShowScanner] = useState(false);
+    const { showScanner, setShowScanner } = useTheme();
     const resultsContainerRef = useRef<HTMLDivElement | null>(null);
+
 
 
     // Load existing ISBNs to check duplicates
@@ -132,10 +135,10 @@ export default function SearchView() {
                             <div className="p-4 bg-white rounded-full shadow-sm">
                                 <BarcodeIcon size={48} className="text-gray-700" />
                             </div>
-                            <span className="font-bold text-lg">バーコードで読み取り</span>
+                            <span className="font-bold text-lg">バーコード読み取り</span>
                         </button>
-                        <p className="text-sm">本のバーコード(ISBN)を読み取って検索</p>
                     </div>
+
                 )}
 
                 <div className="grid grid-cols-1 gap-4">

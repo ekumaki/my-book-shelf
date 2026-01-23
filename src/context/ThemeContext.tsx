@@ -74,7 +74,10 @@ interface ThemeContextType {
     coverBackground: CoverBackground;
     setCoverBackgroundId: (id: CoverBackgroundId) => void;
     availableCoverBackgrounds: CoverBackground[];
+    showScanner: boolean;
+    setShowScanner: (show: boolean) => void;
 }
+
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -86,6 +89,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const [coverBackgroundId, setCoverBackgroundIdState] = useState<CoverBackgroundId>(() => {
         return (localStorage.getItem('bk_cover_bg') as CoverBackgroundId) || 'wooden_stand';
     });
+    const [showScanner, setShowScanner] = useState(false);
+
 
     const setThemeId = (id: ThemeId) => {
         setThemeIdState(id);
@@ -111,8 +116,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
             coverBackgroundId,
             coverBackground,
             setCoverBackgroundId,
-            availableCoverBackgrounds
+            availableCoverBackgrounds,
+            showScanner,
+            setShowScanner
         }}>
+
             {children}
         </ThemeContext.Provider>
     );
