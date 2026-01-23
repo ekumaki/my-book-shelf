@@ -18,6 +18,11 @@ export class MyShocoDB extends Dexie {
             memos: 'id, bookId, tags, createdAt',
             shelves: 'id, title, createdAt'
         });
+        this.version(3).stores({
+            books: 'id, title, titleKana, authors, authorsKana, status, registeredAt, isbn',
+            memos: 'id, bookId, tags, createdAt',
+            shelves: 'id, title, createdAt'
+        });
     }
 }
 

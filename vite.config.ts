@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'マイショコ',
-        short_name: 'マイショコ',
+        name: 'MyShoco',
+        short_name: 'MyShoco',
         description: 'Personal Book Shelf & Knowledge Base',
         theme_color: '#ffffff',
         icons: [
