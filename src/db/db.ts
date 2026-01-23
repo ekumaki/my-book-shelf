@@ -2,13 +2,13 @@ import Dexie, { type Table } from 'dexie';
 import type { Book, Memo, Shelf } from '../types';
 
 
-export class BookKnowledgeDB extends Dexie {
+export class MyShocoDB extends Dexie {
     books!: Table<Book>;
     memos!: Table<Memo>;
     shelves!: Table<Shelf>;
 
     constructor() {
-        super('BookKnowledgeDB');
+        super('MyShocoDB');
         this.version(1).stores({
             books: 'id, title, authors, status, registeredAt, isbn',
             memos: 'id, bookId, tags, createdAt'
@@ -21,4 +21,4 @@ export class BookKnowledgeDB extends Dexie {
     }
 }
 
-export const db = new BookKnowledgeDB();
+export const db = new MyShocoDB();

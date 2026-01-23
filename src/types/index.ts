@@ -29,7 +29,7 @@ export interface Shelf {
     createdAt: number; // Unix Timestamp
 }
 
-export type ThemeId = 'dark_wood' | 'light_wood' | 'pure_white';
+export type ThemeId = 'dark_wood' | 'light_wood' | 'pure_white' | 'pitch_black';
 
 export interface Theme {
     id: ThemeId;
@@ -41,7 +41,7 @@ export interface Theme {
     bgColor: string;
 }
 
-export type CoverBackgroundId = 'wooden_stand' | 'cafe' | 'gradient' | 'white';
+export type CoverBackgroundId = 'wooden_stand' | 'gradient' | 'white' | 'pitch_black';
 
 export interface CoverBackground {
     id: CoverBackgroundId;

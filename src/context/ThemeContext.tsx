@@ -30,6 +30,15 @@ const THEMES: Record<ThemeId, Theme> = {
         subTextColor: 'text-gray-600',
         borderColor: 'border-gray-300',
         bgColor: 'bg-white'
+    },
+    'pitch_black': {
+        id: 'pitch_black',
+        label: '真っ黒',
+        cssClass: 'theme-pitch-black',
+        textColor: 'text-gray-200',
+        subTextColor: 'text-gray-400',
+        borderColor: 'border-gray-800',
+        bgColor: 'bg-black'
     }
 };
 
@@ -39,11 +48,6 @@ const COVER_BACKGROUNDS: Record<CoverBackgroundId, CoverBackground> = {
         label: '木製スタンド風',
         cssClass: 'cover-bg-wooden-stand'
     },
-    'cafe': {
-        id: 'cafe',
-        label: 'カフェ背景',
-        cssClass: 'cover-bg-cafe'
-    },
     'gradient': {
         id: 'gradient',
         label: 'グラデーション',
@@ -51,8 +55,13 @@ const COVER_BACKGROUNDS: Record<CoverBackgroundId, CoverBackground> = {
     },
     'white': {
         id: 'white',
-        label: '白背景',
+        label: '真っ白',
         cssClass: 'cover-bg-white'
+    },
+    'pitch_black': {
+        id: 'pitch_black',
+        label: '真っ黒',
+        cssClass: 'cover-bg-pitch-black'
     }
 };
 
@@ -88,9 +97,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('bk_cover_bg', id);
     };
 
-    const theme = THEMES[themeId];
+    const theme = THEMES[themeId] || THEMES['dark_wood'];
     const availableThemes = Object.values(THEMES);
-    const coverBackground = COVER_BACKGROUNDS[coverBackgroundId];
+    const coverBackground = COVER_BACKGROUNDS[coverBackgroundId] || COVER_BACKGROUNDS['wooden_stand'];
     const availableCoverBackgrounds = Object.values(COVER_BACKGROUNDS);
 
     return (

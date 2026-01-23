@@ -30,10 +30,10 @@ const initialFormState: ShelfFormState = {
     selectedBookIds: new Set()
 };
 
-import { useTheme } from '../../context/ThemeContext';
+
 
 export default function LibraryView() {
-    const { theme } = useTheme();
+
     const navigate = useNavigate();
     const location = useLocation();
     const [mode, setMode] = useState<Mode>('list');
@@ -167,10 +167,10 @@ export default function LibraryView() {
         return (
             <div className="h-full flex flex-col">
                 {/* Header */}
-                <div className={`${theme.bgColor} backdrop-blur-md border-b ${theme.borderColor} p-4 shadow-md z-10 shrink-0 transition-colors`}>
+                <div className="bg-white backdrop-blur-md border-b border-gray-200 p-4 shadow-md z-10 shrink-0 transition-colors">
                     <div className="flex items-center justify-center gap-2">
-                        <Bank size={24} className={theme.textColor} weight="fill" />
-                        <h1 className={`text-xl font-bold ${theme.textColor}`}>ライブラリ</h1>
+                        <Bank size={24} className="text-gray-900" weight="fill" />
+                        <h1 className="text-xl font-bold text-gray-900">ライブラリ</h1>
                     </div>
                 </div>
 
@@ -240,11 +240,11 @@ export default function LibraryView() {
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className={`${theme.bgColor} backdrop-blur-md border-b ${theme.borderColor} p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors`}>
-                <button onClick={handleCancel} className={`${theme.textColor} p-1 rounded-full hover:opacity-70`}>
+            <div className="bg-white backdrop-blur-md border-b border-gray-200 p-3 flex items-center gap-3 shadow-md z-10 shrink-0 transition-colors">
+                <button onClick={handleCancel} className="text-gray-900 p-1 rounded-full hover:opacity-70">
                     <X size={20} />
                 </button>
-                <h2 className={`font-bold flex-1 ${theme.textColor}`}>
+                <h2 className="font-bold flex-1 text-gray-900">
                     {isSmartShelf ? '本棚を確認' : (formState.id ? '本棚を編集' : '新しい本棚')}
                 </h2>
                 {!isSmartShelf && (
@@ -323,7 +323,10 @@ export default function LibraryView() {
                         </div>
                         <select
                             value={statusFilter}
-                            onChange={e => setStatusFilter(e.target.value)}
+                            onChange={e => {
+                                setStatusFilter(e.target.value);
+                                setDateFilter('');
+                            }}
                             className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
                         >
                             <option value="all">すべて</option>
@@ -333,12 +336,23 @@ export default function LibraryView() {
                             <option value="read">読了</option>
                         </select>
                         {statusFilter === 'read' && (
-                            <input
-                                type="month"
-                                value={dateFilter}
-                                onChange={e => setDateFilter(e.target.value)}
-                                className="border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
-                            />
+                            <div className="relative flex items-center">
+                                <input
+                                    type="month"
+                                    value={dateFilter}
+                                    onChange={e => setDateFilter(e.target.value)}
+                                    className="border border-gray-200 rounded-lg pl-2 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-sm text-gray-900"
+                                />
+                                {dateFilter && (
+                                    <button
+                                        onClick={() => setDateFilter('')}
+                                        className="absolute right-2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100"
+                                        title="リセット"
+                                    >
+                                        <X size={14} weight="bold" />
+                                    </button>
+                                )}
+                            </div>
                         )}
                     </div>
 
