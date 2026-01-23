@@ -225,7 +225,9 @@ export default function LibraryView() {
                                                 <p className="text-xs text-gray-500 mt-0.5">{shelf.description}</p>
                                             )}
                                         </div>
-                                        <span className="text-sm text-gray-400">{shelf.bookIds.length}冊</span>
+                                        <span className="text-sm text-gray-400">
+                                            {shelf.bookIds.filter(id => allBooks?.some(b => b.id === id)).length}冊
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -275,6 +277,7 @@ export default function LibraryView() {
                             type="text"
                             value={formState.title}
                             onChange={e => !isSmartShelf && setFormState(prev => ({ ...prev, title: e.target.value }))}
+                            onBlur={() => window.scrollTo(0, 0)}
                             placeholder="例：2025年に読みたい本"
                             disabled={isSmartShelf}
                             className={clsx(
@@ -306,7 +309,9 @@ export default function LibraryView() {
                 {/* Book Selection */}
                 <div className="p-4">
                     <h3 className="font-bold text-gray-700 mb-3">
-                        {isSmartShelf ? `登録されている本 (${formState.selectedBookIds.size}冊)` : `本を選択 (${formState.selectedBookIds.size}冊選択中)`}
+                        {isSmartShelf
+                            ? `登録されている本 (${Array.from(formState.selectedBookIds).filter(id => allBooks?.some(b => b.id === id)).length}冊)`
+                            : `本を選択 (${Array.from(formState.selectedBookIds).filter(id => allBooks?.some(b => b.id === id)).length}冊選択中)`}
                     </h3>
 
                     {/* Filters */}
