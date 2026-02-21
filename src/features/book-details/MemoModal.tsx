@@ -36,34 +36,66 @@ export default function MemoModal({ bookId, onClose, onSaved }: MemoModalProps) 
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full sm:w-96 max-h-[90vh] overflow-y-auto rounded-t-xl sm:rounded-xl p-5 shadow-2xl relative" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4">
+            <div className="bg-white w-full sm:w-96 max-h-[90dvh] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                {/* ヘッダー */}
+                <div className="flex justify-between items-center p-4 border-b">
                     <h3 className="font-bold text-lg">メモを追加</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+                        <X size={24} />
+                    </button>
                 </div>
 
-                <div className="space-y-4">
+                {/* スクロール可能なコンテンツエリア */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-gray-500 mb-1">ページ数 (任意)</label>
-                        <input type="number" className="w-full bg-gray-50 border rounded p-2 text-sm" placeholder="123" value={page} onChange={e => setPage(e.target.value)} />
+                        <input
+                            type="number"
+                            className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                            placeholder="123"
+                            value={page}
+                            onChange={e => setPage(e.target.value)}
+                        />
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-gray-500 mb-1">気になった文章 (引用)</label>
-                        <textarea className="w-full bg-gray-50 border rounded p-2 text-sm h-24" placeholder="本の文章をコピペ..." value={quote} onChange={e => setQuote(e.target.value)}></textarea>
+                        <textarea
+                            className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-sm h-24 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                            placeholder="本の文章をコピペ..."
+                            value={quote}
+                            onChange={e => setQuote(e.target.value)}
+                        ></textarea>
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-gray-500 mb-1">感想・メモ</label>
-                        <textarea className="w-full bg-gray-50 border rounded p-2 text-sm h-24" placeholder="自分の考え..." value={comment} onChange={e => setComment(e.target.value)}></textarea>
+                        <textarea
+                            className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-sm h-24 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                            placeholder="自分の考え..."
+                            value={comment}
+                            onChange={e => setComment(e.target.value)}
+                        ></textarea>
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-gray-500 mb-1">タグ (スペース区切り)</label>
-                        <input type="text" className="w-full bg-gray-50 border rounded p-2 text-sm" placeholder="#お金 #投資" value={tagInput} onChange={e => setTagInput(e.target.value)} />
+                        <input
+                            type="text"
+                            className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                            placeholder="#お金 #投資"
+                            value={tagInput}
+                            onChange={e => setTagInput(e.target.value)}
+                        />
                     </div>
+                </div>
 
-                    <button onClick={handleSave} className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold shadow hover:bg-amber-700">
+                {/* 固定フッター（保存ボタン） */}
+                <div className="p-4 border-t bg-gray-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                    <button
+                        onClick={handleSave}
+                        className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-amber-700 active:transform active:scale-[0.98] transition-all"
+                    >
                         保存する
                     </button>
                 </div>
