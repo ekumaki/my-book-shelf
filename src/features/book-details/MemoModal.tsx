@@ -35,8 +35,8 @@ export default function MemoModal({ bookId, onClose, onSaved }: MemoModalProps) 
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full sm:w-96 max-h-[90dvh] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+            <div className="bg-white w-full sm:w-96 max-h-[85dvh] flex flex-col rounded-2xl shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
                 {/* ヘッダー */}
                 <div className="flex justify-between items-center p-4 border-b">
                     <h3 className="font-bold text-lg">メモを追加</h3>
