@@ -36,9 +36,9 @@ export default function MemoModal({ bookId, onClose, onSaved }: MemoModalProps) 
 
     return (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white w-full sm:w-96 max-h-[85dvh] flex flex-col rounded-2xl shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="bg-white w-full sm:w-96 max-h-[80vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
                 {/* ヘッダー */}
-                <div className="flex justify-between items-center p-4 border-b">
+                <div className="flex justify-between items-center p-4 border-b shrink-0">
                     <h3 className="font-bold text-lg">メモを追加</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
                         <X size={24} />
@@ -91,10 +91,10 @@ export default function MemoModal({ bookId, onClose, onSaved }: MemoModalProps) 
                 </div>
 
                 {/* 固定フッター（保存ボタン） */}
-                <div className="p-4 border-t bg-gray-50 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                <div className="p-4 border-t bg-gray-50 shrink-0">
                     <button
                         onClick={handleSave}
-                        className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-amber-700 active:transform active:scale-[0.98] transition-all"
+                        className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-amber-700 active:scale-[0.98] transition-all"
                     >
                         保存する
                     </button>
